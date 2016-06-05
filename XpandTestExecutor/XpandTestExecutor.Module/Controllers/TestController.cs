@@ -45,17 +45,11 @@ namespace XpandTestExecutor.Module.Controllers {
             _testControllerHelper = Application.MainWindow.GetController<TestControllerHelper>();
         }
 
-        public SingleChoiceAction SelectionModeAction {
-            get { return _testControllerHelper.SelectionModeAction; }
-        }
+        public SingleChoiceAction SelectionModeAction => _testControllerHelper.SelectionModeAction;
 
-        public SingleChoiceAction UserModeAction {
-            get { return _testControllerHelper.UserModeAction; }
-        }
+        public SingleChoiceAction UserModeAction => _testControllerHelper.UserModeAction;
 
-        public bool IsDebug {
-            get { return _testControllerHelper.ExecutionModeAction.SelectedItem.Caption == "Debug"; }
-        }
+        public bool IsDebug => _testControllerHelper.ExecutionModeAction.SelectedItem.Caption == "Debug";
 
         private void UnlinkTestActionOnExecute(object sender, SimpleActionExecuteEventArgs e) {
             var easyTests = e.SelectedObjects.Cast<EasyTest>().ToArray();
@@ -77,7 +71,7 @@ namespace XpandTestExecutor.Module.Controllers {
             if (_runTestAction.Caption==CancelRun){
                 if (_cancellationTokenSource != null) {
                     _cancellationTokenSource.Cancel();
-                    var executionInfo = ObjectSpace.FindObject<ExecutionInfo>(info=>info.Sequence==CurrentSequenceOperator.CurrentSequence);
+                    var executionInfo = ObjectSpace.QueryObject<ExecutionInfo>(info=>info.Sequence==CurrentSequenceOperator.CurrentSequence);
                     var users = executionInfo.EasyTestRunningInfos.Select(info => info.WindowsUser.Name).Where(s => s!=null).ToArray();
                     EnviromentEx.LogOffAllUsers(users);
                     TestEnviroment.KillProcessAsUser();

@@ -41,14 +41,10 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             return Application + " " + Name;
         }
 
-        public double Duration {
-            get { return GetCurrentSequenceInfos().Duration(); }
-        }
+        public double Duration => GetCurrentSequenceInfos().Duration();
 
         [InvisibleInAllViews]
-        public XPCollection<EasyTestExecutionInfo> FailedEasyTestExecutionInfos {
-            get { return GetCurrentSequenceInfos().Failed(); }
-        }
+        public XPCollection<EasyTestExecutionInfo> FailedEasyTestExecutionInfos => GetCurrentSequenceInfos().Failed();
 
 
         public XPCollection<EasyTestExecutionInfo> GetCurrentSequenceInfos() {
@@ -63,9 +59,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         [Association("EasyTestExecutionInfo-EasyTests")]
-        public XPCollection<EasyTestExecutionInfo> EasyTestExecutionInfos {
-            get { return GetCollection<EasyTestExecutionInfo>("EasyTestExecutionInfos"); }
-        }
+        public XPCollection<EasyTestExecutionInfo> EasyTestExecutionInfos => GetCollection<EasyTestExecutionInfo>("EasyTestExecutionInfos");
 
         [Size(SizeAttribute.Unlimited)]
         [RuleUniqueValue]
@@ -80,26 +74,18 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         [VisibleInDetailView(false)]
-        public string Name {
-            get { return Path.GetFileNameWithoutExtension(FileName); }
-        }
+        public string Name => Path.GetFileNameWithoutExtension(FileName);
 
         [InvisibleInAllViews]
-        public EasyTestExecutionInfo LastEasyTestExecutionInfo {
-            get { return _lastEasyTestExecutionInfo ?? GetLastInfo(); }
-        }
+        public EasyTestExecutionInfo LastEasyTestExecutionInfo => _lastEasyTestExecutionInfo ?? GetLastInfo();
 
         [InvisibleInAllViews]
         public long Sequence { get; set; }
 
-        string ISupportSequenceObject.Prefix {
-            get { return null; }
-        }
+        string ISupportSequenceObject.Prefix => null;
 
         [Browsable(false)]
-        public Options Options{
-            get { return OptionsProvider.Instance[FileName]; }
-        }
+        public Options Options => OptionsProvider.Instance[FileName];
 
         public void CreateExecutionInfo(bool useCustomPort, ExecutionInfo executionInfo, WindowsUser windowsUser = null) {
             _lastEasyTestExecutionInfo = new EasyTestExecutionInfo(Session) {
@@ -140,7 +126,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             for (int index = 0; index < fileNames.Length; index++) {
                 var fileName = fileNames[index];
                 string name = fileName;
-                var easyTest = objectSpace.FindObject<EasyTest>(test => test.FileName == name) ?? objectSpace.CreateObject<EasyTest>();
+                var easyTest = objectSpace.QueryObject<EasyTest>(test => test.FileName == name) ?? objectSpace.CreateObject<EasyTest>();
                 easyTest.FileName = fileName;
                 easyTest.Application = easyTest.Options.Applications.Cast<TestApplication>().Select(application => application.Name.Replace(".Win", "").Replace(".Web", "")).First();
                 easyTests[index] = easyTest;
