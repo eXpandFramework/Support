@@ -25,9 +25,17 @@ namespace XpandTestExecutor.Module.Services {
             using (var unitOfWork = new UnitOfWork(dataLayer)) {
                 var executionInfo = unitOfWork.GetObjectByKey<ExecutionInfo>(executionInfoKey, true);
                 var finishedCount = executionInfo.FinishedTests.Count;
-                var ret = finishedCount == testsCount||executionInfo.FailedAgain();
-                if (ret)
-                    Tracing.Tracer.LogText("ExecutionFinished for Seq "+executionInfo.Sequence);
+                var allFinished = finishedCount == testsCount;
+                var failedAgain = executionInfo.FailedAgain();
+                var ret = allFinished || failedAgain;
+                if (ret) {
+                    string reason = null;
+                    if (allFinished)
+                        reason = "allFinished ";
+                    if (failedAgain)
+                        reason += "failedAgain";
+                    Tracing.Tracer.LogText("ExecutionFinished for Seq " + executionInfo.Sequence + " reason:" + reason);
+                }
                 return ret;
             }
         }
@@ -99,9 +107,9 @@ namespace XpandTestExecutor.Module.Services {
             Tracing.Tracer.LogSeparator("LogErrorsCore");
             try {
                 easyTest.LastEasyTestExecutionInfo.Update(EasyTestState.Failed);
-                easyTest.LastEasyTestExecutionInfo.Setup(true);
                 easyTest.Session.ValidateAndCommitChanges();
                 EnviromentEx.LogOffUser(easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
+                easyTest.LastEasyTestExecutionInfo.Setup(true);
                 var directoryName = Path.GetDirectoryName(easyTest.FileName) + "";
                 var logTests = new LogTests();
                 foreach (var application in easyTest.Options.Applications.Cast<TestApplication>()) {

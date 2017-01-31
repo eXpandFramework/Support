@@ -42,14 +42,6 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             }
         }
 
-//        public XPCollection<EasyTestExecutionInfo> FinishedInfos => new XPCollection<EasyTestExecutionInfo>(Session, FailedInfos.Concat(pa));
-
-        public XPCollection<EasyTestExecutionInfo> FailedInfos {
-            get{
-                return new XPCollection<EasyTestExecutionInfo>(Session,EasyTestExecutionInfos.Where(info => info.State == EasyTestState.Failed || info.State == EasyTestState.Running));
-            }
-        }
-
         [VisibleInListView(false)]
         public DateTime CreationDate {
             get { return _creationDate; }
@@ -59,10 +51,6 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [InvisibleInAllViews]
         public XPCollection<EasyTest> PassedEasyTests {
             get {
-//                var passedEasyTests =
-//                    EasyTestExecutionInfos.GroupBy(info => info.EasyTest)
-//                        .Where(infos => infos.Any(info => info.State == EasyTestState.Passed))
-//                        .Select(infos => infos.Key);
                 return new XPCollection<EasyTest>(Session,
                     EasyTestExecutionInfos.Where(info => info.State==EasyTestState.Passed).Select(info => info.EasyTest));
             }
@@ -78,8 +66,8 @@ namespace XpandTestExecutor.Module.BusinessObjects {
 
         public IEnumerable<EasyTest> FailedTests{
             get{
-                return FailedInfos.GroupBy(info => info.EasyTest)
-                        .Where(infos => infos.Count() == Retries + 1)
+                return EasyTestExecutionInfos.GroupBy(info => info.EasyTest)
+                        .Where(infos => infos.Count() == Retries + 1&&infos.All(info =>info.State!=EasyTestState.Passed&&info.State!=EasyTestState.Running ))
                         .Select(infos => infos.Key);
             }
         }
