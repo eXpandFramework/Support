@@ -14,7 +14,6 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#JobScheduler</projectUrl>
     <dependencies>
-      <dependency id="Common.Logging" version="2.1.2" />
       <dependency id="eXpandAdditionalViewControlsProvider" version="16.2.4.3" />
       <dependency id="eXpandLib" version="16.2.4.3" />
       <dependency id="eXpandLogic" version="16.2.4.3" />

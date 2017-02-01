@@ -25,7 +25,6 @@ http://apobekiaris.blogspot.com/search/label/ModelDifference.. To debug in VS en
     <dependencies>
       <dependency id="eXpandLib" version="16.2.4.3" />
       <dependency id="eXpandModelDifference" version="16.2.4.3" />
-      <dependency id="eXpandSecurity" version="16.2.4.3" />
       <dependency id="eXpandSecurityWin" version="16.2.4.3" />
       <dependency id="eXpandSystemWin" version="16.2.4.3" />
       <dependency id="Fasterflect" version="2.1.3" />
