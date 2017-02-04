@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Xml.Serialization;
 using DevExpress.EasyTest.Framework;
+using Fasterflect;
 
 namespace XpandTestExecutor.Module.BusinessObjects {
     public class OptionsProvider {
@@ -28,10 +30,19 @@ namespace XpandTestExecutor.Module.BusinessObjects {
                     File.Copy(fileName, destFileName,true);
                 Options options;
                 using (var fileStream = new FileStream(destFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite)) {
-                    options = Options.LoadOptions(fileStream, null, null, directoryName);
+                    options = LoadOptions(fileStream, null, null, directoryName);
                 }
                 Instance._options.Add(path.ToLower(), options);
             }
         }
+
+        public static Options LoadOptions(Stream optionsStream, string profileName, string overrides, string configPath) {
+            Options options = (Options)new XmlSerializer(typeof(Options)).Deserialize(new AliasesComposer(profileName, overrides).ComposeAliases(optionsStream, configPath));
+            options.SetFieldValue("profileName",profileName) ;
+            options.SetFieldValue("overrides", overrides) ;
+            return options;
+        }
+
     }
+
 }

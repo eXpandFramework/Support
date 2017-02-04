@@ -67,10 +67,15 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         public IEnumerable<EasyTest> FailedTests{
             get{
                 return EasyTestExecutionInfos.GroupBy(info => info.EasyTest)
-                        .Where(infos => infos.Count() == Retries + 1&&infos.All(info =>info.State!=EasyTestState.Passed&&info.State!=EasyTestState.Running ))
+                        .Where(Failure)
                         .Select(infos => infos.Key);
             }
         }
+
+        private bool Failure(IGrouping<EasyTest, EasyTestExecutionInfo> infos){
+            return infos.Count() == Retries + 1&&infos.All(info => info.State==EasyTestState.Failed );
+        }
+
 
         protected override void OnSaving() {
             base.OnSaving();

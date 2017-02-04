@@ -37,8 +37,11 @@ namespace RDClient {
                                 Thread.Sleep(5000);
                             }
                         });
-                        Task.WaitAll(task);
+                        var waitAll = Task.WaitAll(new [] { task },Options.Instance.TimeOut);
+                        if (!waitAll)
+                            Trace.WriteLine("Timeout",Options.Instance.UserName);
                         pipeClient.Close();
+                        pipeClient.Dispose();
                         rdClient.Close();
                     };
                     Application.Run(rdClient);

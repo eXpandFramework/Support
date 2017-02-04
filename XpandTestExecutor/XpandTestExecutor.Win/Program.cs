@@ -3,11 +3,8 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using DevExpress.ExpressApp.Security;
-using Xpand.Utils.Threading;
-using XpandTestExecutor.Module;
 using XpandTestExecutor.Module.Services;
 
 namespace XpandTestExecutor.Win {

@@ -89,7 +89,7 @@
         <ColumnInfo Id="WindowsUser" Index="1" />
       </Columns>
     </ListView>
-    <ListView Id="EasyTest_ListView" MasterDetailMode="ListViewAndDetailView" IsGroupPanelVisible="False" AutoExpandAllGroups="True">
+    <ListView Id="EasyTest_ListView" MasterDetailMode="ListViewAndDetailView" IsGroupPanelVisible="False" AutoExpandAllGroups="True" AllowLink="False" AllowNew="False" AllowDelete="False">
       <Columns>
         <ColumnInfo Id="Name" Index="0" />
         <ColumnInfo Id="Application" SortOrder="Ascending" GroupIndex="0" Index="1" />
@@ -97,8 +97,8 @@
       <Filters>
         <Filter Id="All" Index="0" IsNewNode="True" />
         <Filter Id="Executed" Criteria="[Executed] = True" Index="1" IsNewNode="True" />
-        <Filter Id="Running" Criteria="[Running] = True" Index="1" IsNewNode="True" />
         <Filter Id="Passed" Criteria="[Passed] = True" Index="1" IsNewNode="True" />
+        <Filter Id="Running" Criteria="[Running] = True" Index="1" IsNewNode="True" />
         <Filter Id="Failed" Criteria="[Failed] = True" IsNewNode="True" />
       </Filters>
     </ListView>

@@ -9,7 +9,6 @@ using DevExpress.ExpressApp.Model;
 using DevExpress.Persistent.Base;
 using DevExpress.Xpo;
 using Xpand.Persistent.Base.General;
-using Xpand.Utils.Helpers;
 using XpandTestExecutor.Module.BusinessObjects;
 using XpandTestExecutor.Module.Services;
 
@@ -69,29 +68,26 @@ namespace XpandTestExecutor.Module.Controllers {
         private void RunTestActionOnExecute(object sender, SimpleActionExecuteEventArgs e) {
             var rdc = IsRDC();
             if (_runTestAction.Caption==CancelRun){
-                if (_cancellationTokenSource != null) {
-                    _cancellationTokenSource.Cancel();
-                    var executionInfo = ObjectSpace.QueryObject<ExecutionInfo>(info=>info.Sequence==CurrentSequenceOperator.CurrentSequence);
-                    var users = executionInfo.EasyTestRunningInfos.Select(info => info.WindowsUser.Name).Where(s => s!=null).ToArray();
-                    EnviromentEx.LogOffAllUsers(users);
-                    TestEnviroment.KillProcessAsUser();
-                    ObjectSpace.Delete(executionInfo);
-                    ObjectSpace.CommitChanges();
-                }
-                _runTestAction.Caption = Run;
+                _runTestAction.Enabled[CancelRun] = false;
+                _cancellationTokenSource?.Cancel();
             }
-            else if (ReferenceEquals(SelectionModeAction.SelectedItem.Data, TestControllerHelper.Selected)) {
+            else if (ReferenceEquals(SelectionModeAction.SelectedItem.Data, TestControllerHelper.Selected)){
                 _runTestAction.Caption = CancelRun;
-                if (!rdc) {
+                if (!rdc){
                     _unlinkTestAction.DoExecute();
                 }
-                _cancellationTokenSource = TestRunner.Execute(e.SelectedObjects.Cast<EasyTest>().ToArray(), rdc,IsDebug,
-                    task => _runTestAction.Caption = Run);}
-            else {
+                _cancellationTokenSource = TestRunner.Execute(e.SelectedObjects.Cast<EasyTest>().ToArray(), rdc, IsDebug,
+                    task =>{
+                        _runTestAction.Caption = Run;
+                        _runTestAction.Enabled[CancelRun] = true;
+                    });
+            }
+            else{
                 var fileName = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "EasyTests.txt");
                 TestRunner.Execute(fileName, rdc);
             }
         }
+
 
         private bool IsRDC(){
             return SelectionModeAction.Active && ReferenceEquals(UserModeAction.SelectedItem.Data, TestControllerHelper.RDC);

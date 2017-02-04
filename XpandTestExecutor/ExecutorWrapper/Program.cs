@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -23,7 +22,8 @@ namespace ExecutorWrapper {
             Trace.Listeners.Add(new TextWriterTraceListener(streamWriter));
             var handle = GetConsoleWindow();
             ShowWindow(handle, SW_HIDE);
-            var arguments = string.Join(" ", args.Skip(1));
+            Trace.WriteLine(string.Join(" ",args));
+            var arguments = @""""+args[1]+@""" "+ (args.Length > 2? args[2]:null);
             var debugMode = arguments.Contains("-d:");
             var processStartInfo = new ProcessStartInfo { FileName = args[0], Arguments =  arguments , UseShellExecute = debugMode, CreateNoWindow = debugMode, RedirectStandardOutput = !debugMode };
             var process = new Process(){StartInfo = processStartInfo};

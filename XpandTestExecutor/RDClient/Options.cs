@@ -3,8 +3,6 @@ using CommandLine.Text;
 
 namespace RDClient{
     public class Options {
-        private static readonly Options _instance=new Options();
-
         private Options(){
         }
 
@@ -20,9 +18,10 @@ namespace RDClient{
         [ParserState]
         public IParserState LastParserState { get; set; }
 
-        public static Options Instance{
-            get { return _instance; }
-        }
+        public static Options Instance { get; } = new Options();
+
+        [Option('m', "timeout" )]
+        public int TimeOut { get; set; }
 
         [HelpOption]
         public string GetUsage() {

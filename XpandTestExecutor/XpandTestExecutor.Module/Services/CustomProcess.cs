@@ -3,7 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using DevExpress.Persistent.Base;
+using Xpand.Utils.Threading;
 using XpandTestExecutor.Module.BusinessObjects;
 
 namespace XpandTestExecutor.Module.Services{
@@ -21,24 +24,29 @@ namespace XpandTestExecutor.Module.Services{
             _windowsUser = windowsUser;
         }
 
-        public new void Start(){
+        public void Start(CancellationToken token, int timeout){
             if (_rdc){
+                Tracing.Tracer.LogValue("StartServerStream", _windowsUser.Name);
                 _serverStream = new NamedPipeServerStream(_windowsUser.Name, PipeDirection.InOut, 1);
-                Task.Factory.StartNew(StartClient);
+                Task.Factory.StartNew(() => StartClient(token,timeout), token,TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(timeout).ContinueWith(
+                    task =>Tracing.Tracer.LogValue("StartClient-Timeout",_windowsUser.Name),token);
+                Tracing.Tracer.LogValue("WaitForConnection", _windowsUser.Name);
                 _serverStream.WaitForConnection();
+                Tracing.Tracer.LogValue("GetSessionId", _windowsUser.Name);
                 var sessionId = GetSessionId();
                 StartInfo=CreateStartInfo(sessionId);
             }
             else{
                 StartInfo=CreateStartInfo();
             }
-            base.Start();
+            Start();
         }
 
-        private void StartClient(){
+        private void StartClient(CancellationToken token, int timeout){
+            token.ThrowIfCancellationRequested();
             string domain =!string.IsNullOrEmpty(WindowsUser.Domain)? " -d " + WindowsUser.Domain:null;
             var processStartInfo = new ProcessStartInfo("RDClient.exe",
-                "-u " + _windowsUser.Name + " -p " + _windowsUser.Password + domain){
+                "-u " + _windowsUser.Name + " -p " + _windowsUser.Password +" -m "+timeout+ domain){
                     FileName = "RDClient.exe",
                     CreateNoWindow = true,WorkingDirectory = Path.GetDirectoryName(_easyTest.FileName)+""
                 };
@@ -46,6 +54,7 @@ namespace XpandTestExecutor.Module.Services{
                 StartInfo = processStartInfo
             };
             rdClientProcess.Start();
+            rdClientProcess.WaitForExit(timeout);
         }
 
         private int GetSessionId(){
@@ -53,22 +62,29 @@ namespace XpandTestExecutor.Module.Services{
             return Convert.ToInt32(streamString.ReadString());
         }
 
-        public void CloseRDClient(){
-            var streamString = new StreamString(_serverStream);
-            streamString.WriteString(true.ToString());
-            _serverStream.WaitForPipeDrain();
-            _serverStream.Close();
+        public void CloseRDClient(int timeout){
+            if (_serverStream != null){
+                var wait = Task.Factory.StartNew(() =>{
+                    var streamString = new StreamString(_serverStream);
+                    streamString.WriteString(true.ToString());
+                    _serverStream.WaitForPipeDrain();
+                    _serverStream.Close();
+                    _serverStream.Dispose();
+                }).Wait(timeout);
+                if (!wait){
+                    Tracing.Tracer.LogValue("RDClient-_serverStream", _easyTest.Name);
+                }
+            }
         }
+
 
         private ProcessStartInfo CreateStartInfo(int sessionId=0){
             var workingDirectory = Path.GetDirectoryName(_easyTest.FileName) + "";
             var executorWrapper = "executorwrapper.exe";
-            var testExecutor = string.Format("TestExecutor.v{0}.exe", AssemblyInfo.VersionShort);
-            var debugModeArgs = _debugMode ? @"""-d:""" : null;
+            var testExecutor = $"TestExecutor.v{AssemblyInfo.VersionShort}.exe";
+            var debugModeArgs = _debugMode ? @""" -d:""" : null;
             var testExecutorArgs =@""""+Path.Combine(workingDirectory,_easyTest.FileName)+@"""";
-            var arguments = string.Format("/accepteula -u {0}\\{1} -p {2} -w {3} -h -i {4} {5}", WindowsUser.Domain,
-                _windowsUser.Name, _windowsUser.Password, @"""" + workingDirectory + @"""", sessionId,
-                @"""" + Path.Combine(workingDirectory, executorWrapper) + @""" "+testExecutor +@" """ + testExecutorArgs + @""" "+debugModeArgs);
+            var arguments =$"/accepteula -u {WindowsUser.Domain}\\{_windowsUser.Name} -p {_windowsUser.Password} -w {@"""" + workingDirectory + @""""} -h -i {sessionId} {@"""" + Path.Combine(workingDirectory, executorWrapper) + @""" " + testExecutor + " " + testExecutorArgs + debugModeArgs}";
             return new ProcessStartInfo {
                 WorkingDirectory = workingDirectory,
                 FileName = _rdc ? "psexec" : testExecutor,

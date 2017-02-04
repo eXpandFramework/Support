@@ -41,9 +41,7 @@ namespace RDClient {
             Connect(options.UserName,options.Password,Options.Instance.Domain);
         }
 
-        public AxMsTscAxNotSafeForScripting Rdp {
-            get { return rdp; }
-        }
+        public AxMsTscAxNotSafeForScripting Rdp => rdp;
 
         public void Connect(string userName, string password, string domain=null) {
             rdp.DesktopWidth = 1440;

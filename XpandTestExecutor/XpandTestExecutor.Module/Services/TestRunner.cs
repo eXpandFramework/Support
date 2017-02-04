@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -40,25 +39,29 @@ namespace XpandTestExecutor.Module.Services {
             }
         }
 
-        public static readonly Dictionary<Guid, Process> Processes = new Dictionary<Guid, Process>();
-        private static void RunTest(Guid easyTestKey, IDataLayer dataLayer, bool rdc, bool debugMode) {
+        
+        private static void RunTest(Guid easyTestKey, IDataLayer dataLayer, bool rdc, bool debugMode, CancellationToken token) {
             CustomProcess process;
             int timeout;
             string easyTestName;
             lock (_locker) {
+                Tracing.Tracer.LogText(nameof(RunTest));
                 using (var unitOfWork = new UnitOfWork(dataLayer)) {
                     var easyTest = unitOfWork.GetObjectByKey<EasyTest>(easyTestKey, true);
-                    easyTestName = easyTest.Name+"/"+easyTest.Application;
-                    Tracing.Tracer.LogValue("RunTest",easyTestName);
+
+
                     timeout = easyTest.Options.DefaultTimeout*60*1000;
                     try {
+                        
                         var lastEasyTestExecutionInfo = easyTest.LastEasyTestExecutionInfo;
                         var user = lastEasyTestExecutionInfo.WindowsUser;
+                        easyTestName = easyTest.Name + "/" + easyTest.Application+"/"+user;
+                        Tracing.Tracer.LogValue("RunTest", easyTestName);
                         easyTest.LastEasyTestExecutionInfo.Setup(false);
                         process = new CustomProcess(easyTest,user,rdc,debugMode);
 
-                        process.Start();
-                        Processes[easyTestKey] = process;
+                        process.Start(token,timeout);
+                        
                         lastEasyTestExecutionInfo =
                             unitOfWork.GetObjectByKey<EasyTestExecutionInfo>(lastEasyTestExecutionInfo.Oid, true);
                         lastEasyTestExecutionInfo.Update(EasyTestState.Running);
@@ -72,24 +75,25 @@ namespace XpandTestExecutor.Module.Services {
                     }
                 }
             }
+            token.ThrowIfCancellationRequested();
 
-            var complete = Task.Factory.StartNew(() =>{
-                Tracing.Tracer.LogValue("WaitForExit", easyTestName);
-                process.WaitForExit();
-            }).TimeoutAfter(timeout).WaitToCompleteOrTimeOut();
+
+            var complete = process.WaitForExit(timeout);
             if (!complete)
                 Tracing.Tracer.LogValue("TimeOut", easyTestName);
 
-            Tracing.Tracer.LogValue("CloseRDClient",easyTestName);
-            process.CloseRDClient();
             try {
+                Tracing.Tracer.LogValue("CloseRDClient", easyTestName);
+                process.CloseRDClient(timeout);
                 AfterProcessExecute(dataLayer, easyTestKey);
             }
             catch (Exception e) {
+                process.CloseRDClient(timeout);
                 using (var unitOfWork = new UnitOfWork(dataLayer)) {
                     var easyTest = unitOfWork.GetObjectByKey<EasyTest>(easyTestKey, true);
                     LogErrors(easyTest, e);
                 }
+                throw;
             }
             
         }
@@ -139,7 +143,9 @@ namespace XpandTestExecutor.Module.Services {
                         state = EasyTestState.Failed;
                     }
                     Tracing.Tracer.LogValue("State", state.ToString());
+                    Tracing.Tracer.LogValue("Update", easyTest.Name + "/" + easyTest.Application);
                     easyTest.LastEasyTestExecutionInfo.Update(state);
+                    easyTest.Session.ValidateAndCommitChanges();
                     if (easyTest.LastEasyTestExecutionInfo.ExecutedFromOtherUser()) {
                         EnviromentEx.LogOffUser(easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
                         Tracing.Tracer.LogValue("LogOffUser", easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
@@ -147,7 +153,6 @@ namespace XpandTestExecutor.Module.Services {
                         easyTest.IgnoreApplications(logTests,easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
                         Tracing.Tracer.LogValue("Execution", "Reset");
                     }
-                    easyTest.Session.ValidateAndCommitChanges();
                     Tracing.Tracer.LogValue("Out AfterProcessExecute", easyTest.Name+"/"+easyTest.Application);
                 }
             }
@@ -185,27 +190,40 @@ namespace XpandTestExecutor.Module.Services {
         public static CancellationTokenSource Execute(EasyTest[] easyTests, bool rdc, bool debugMode, Action<Task> continueWith ) {
             Tracing.Tracer.LogValue("EasyTests.Count", easyTests.Length);
             if (easyTests.Any()) {
-                InitProcessDictionary(easyTests);
                 TestEnviroment.Setup(easyTests);
                 var tokenSource = new CancellationTokenSource();
-                Task.Factory.StartNew(() => ExecuteCore(easyTests, rdc,  tokenSource.Token,debugMode),tokenSource.Token).ContinueWith(task =>{
-                    TestEnviroment.Cleanup(easyTests);
+                // ReSharper disable once MethodSupportsCancellation
+                Task.Factory.StartNew(() => ExecuteCore(easyTests, rdc,  tokenSource.Token,debugMode),tokenSource.Token,TaskCreationOptions.AttachedToParent, TaskScheduler.Current).ContinueWith(task =>{
                     Tracing.Tracer.LogText("Main thread finished");
                     continueWith(task);
-                }, tokenSource.Token);
+                });
                 Thread.Sleep(100);
                 return tokenSource;
             }
             return null;
         }
 
-        private static void InitProcessDictionary(IEnumerable<EasyTest> easyTests){
-            lock (_locker){
-                Processes.Clear();
-                foreach (var easyTest in easyTests) {
-                    Processes.Add(easyTest.Oid, null);
+        private static void LastCleanup(EasyTest[] easyTests, CancellationToken tokenSourceToken){
+            try{
+                if (tokenSourceToken.IsCancellationRequested){
+                    var dataLayer = GetDatalayer();
+                    var unitOfWork = new UnitOfWork(dataLayer);
+                    var sequence = unitOfWork.Query<ExecutionInfo>().Max(info => info.Sequence);
+                    var executionInfo = unitOfWork.Query<ExecutionInfo>().First(info => info.Sequence == sequence);
+                    var users = executionInfo.EasyTestExecutionInfos.Select(info => info.WindowsUser?.Name).Where(s => s != null).Distinct().ToArray();
+                    EnviromentEx.LogOffAllUsers(users);
+                    
+//                    TestEnviroment.KillRDClient();
+                    unitOfWork.Delete(executionInfo);
+                    unitOfWork.CommitChanges();
                 }
             }
+            catch (Exception e){
+                Tracing.Tracer.LogText(nameof(LastCleanup));
+                Tracing.Tracer.LogError(e);
+                throw;
+            }
+            TestEnviroment.Cleanup(easyTests);
         }
 
         private static void ExecuteCore(EasyTest[] easyTests, bool rdc, CancellationToken token, bool debugMode) {
@@ -214,17 +232,17 @@ namespace XpandTestExecutor.Module.Services {
                 var dataLayer = GetDatalayer();
                 var executionInfoKey = CreateExecutionInfoKey(dataLayer, rdc, easyTests);
                 do {
-                    if (token.IsCancellationRequested)
-                        return;
+                    token.ThrowIfCancellationRequested();
                     var easyTest = GetNextEasyTest(executionInfoKey, easyTests, dataLayer, rdc);
                     if (easyTest != null) {
                         fileName = easyTest.FileName;
-                        Task.Factory.StartNew(() => RunTest(easyTest.Oid, dataLayer, rdc,debugMode), token).TimeoutAfter(easyTest.Options.DefaultTimeout*60*1000);
+                        Task.Factory.StartNew(() => RunTest(easyTest.Oid, dataLayer, rdc,debugMode,token),token, TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(easyTest.Options.DefaultTimeout*60*1000);
                     }
                     Thread.Sleep(2000);
                 } while (!ExecutionFinished(dataLayer, executionInfoKey, easyTests.Length));
             }
             catch (Exception e) {
+                LastCleanup(easyTests, token);
                 Tracing.Tracer.LogError(new Exception("ExecutionCore Exception on " + fileName,e));
                 throw;
             }
