@@ -48,7 +48,7 @@ namespace XpandTestExecutor.Module.Services {
                 Tracing.Tracer.LogText(nameof(RunTest));
                 using (var unitOfWork = new UnitOfWork(dataLayer)) {
                     var easyTest = unitOfWork.GetObjectByKey<EasyTest>(easyTestKey, true);
-
+                    token.ThrowIfCancellationRequested();
 
                     timeout = easyTest.Options.DefaultTimeout*60*1000;
                     try {
@@ -56,16 +56,11 @@ namespace XpandTestExecutor.Module.Services {
                         var lastEasyTestExecutionInfo = easyTest.LastEasyTestExecutionInfo;
                         var user = lastEasyTestExecutionInfo.WindowsUser;
                         easyTestName = easyTest.Name + "/" + easyTest.Application+"/"+user;
-                        Tracing.Tracer.LogValue("RunTest", easyTestName);
+                        Tracing.Tracer.LogValue(easyTest, "RunTest");
                         easyTest.LastEasyTestExecutionInfo.Setup(false);
                         process = new CustomProcess(easyTest,user,rdc,debugMode);
 
                         process.Start(token,timeout);
-                        
-                        lastEasyTestExecutionInfo =
-                            unitOfWork.GetObjectByKey<EasyTestExecutionInfo>(lastEasyTestExecutionInfo.Oid, true);
-                        lastEasyTestExecutionInfo.Update(EasyTestState.Running);
-                        unitOfWork.ValidateAndCommitChanges();
 
                         Thread.Sleep(2000);
                     }
@@ -75,20 +70,18 @@ namespace XpandTestExecutor.Module.Services {
                     }
                 }
             }
-            token.ThrowIfCancellationRequested();
-
-
-            var complete = process.WaitForExit(timeout);
-            if (!complete)
-                Tracing.Tracer.LogValue("TimeOut", easyTestName);
+            
 
             try {
-                Tracing.Tracer.LogValue("CloseRDClient", easyTestName);
-                process.CloseRDClient(timeout);
+                var complete = process.WaitForExit(timeout);
+                Tracing.Tracer.LogValue(easyTestName+"/Completed=", complete);
                 AfterProcessExecute(dataLayer, easyTestKey);
+                process.CloseRDClient();
+                Tracing.Tracer.LogValue(easyTestName + "/Completed=", complete);
+                
+//                process.CloseRDClient();
             }
             catch (Exception e) {
-                process.CloseRDClient(timeout);
                 using (var unitOfWork = new UnitOfWork(dataLayer)) {
                     var easyTest = unitOfWork.GetObjectByKey<EasyTest>(easyTestKey, true);
                     LogErrors(easyTest, e);
@@ -132,9 +125,13 @@ namespace XpandTestExecutor.Module.Services {
         }
         private static void AfterProcessExecute(IDataLayer dataLayer, Guid easyTestKey) {
             lock (_locker) {
+                
                 using (var unitOfWork = new UnitOfWork(dataLayer)) {
                     var easyTest = unitOfWork.GetObjectByKey<EasyTest>(easyTestKey, true);
-                    Tracing.Tracer.LogValue("In AfterProcessExecute", easyTest.Name + "/" + easyTest.Application);
+                    
+                    Tracing.Tracer.LogValue(easyTest, "LogOffUser "+ easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
+                    EnviromentEx.LogOffUser(easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
+                    
                     var directoryName = Path.GetDirectoryName(easyTest.FileName) + "";
                     CopyXafLogs(directoryName);
                     var logTests = easyTest.GetLogTests();
@@ -142,18 +139,14 @@ namespace XpandTestExecutor.Module.Services {
                     if (logTests.Any(test => test.Result != "Passed")) {
                         state = EasyTestState.Failed;
                     }
-                    Tracing.Tracer.LogValue("State", state.ToString());
-                    Tracing.Tracer.LogValue("Update", easyTest.Name + "/" + easyTest.Application);
+                    Tracing.Tracer.LogValue(easyTest, "State="+ state.ToString());
+                    Tracing.Tracer.LogValue(easyTest, "Update="+ easyTest.Name + "/" + easyTest.Application);
                     easyTest.LastEasyTestExecutionInfo.Update(state);
                     easyTest.Session.ValidateAndCommitChanges();
-                    if (easyTest.LastEasyTestExecutionInfo.ExecutedFromOtherUser()) {
-                        EnviromentEx.LogOffUser(easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
-                        Tracing.Tracer.LogValue("LogOffUser", easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
-                        easyTest.LastEasyTestExecutionInfo.Setup(true);
-                        easyTest.IgnoreApplications(logTests,easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
-                        Tracing.Tracer.LogValue("Execution", "Reset");
-                    }
-                    Tracing.Tracer.LogValue("Out AfterProcessExecute", easyTest.Name+"/"+easyTest.Application);
+                    
+                    easyTest.LastEasyTestExecutionInfo.Setup(true);
+                    easyTest.IgnoreApplications(logTests, easyTest.LastEasyTestExecutionInfo.WindowsUser.Name);
+                    Tracing.Tracer.LogValue(easyTest, "Out AfterProcessExecute="+ easyTest.Name+"/"+easyTest.Application);
                 }
             }
         }
@@ -272,21 +265,25 @@ namespace XpandTestExecutor.Module.Services {
         }
 
         private static EasyTest GetNextEasyTest(Guid executionInfoKey, EasyTest[] easyTests, IDataLayer dataLayer, bool rdc) {
-            using (var unitOfWork = new UnitOfWork(dataLayer)) {
-                var executionInfo = unitOfWork.GetObjectByKey<ExecutionInfo>(executionInfoKey);
+            lock (_locker){
+                using (var unitOfWork = new UnitOfWork(dataLayer)) {
+                    var executionInfo = unitOfWork.GetObjectByKey<ExecutionInfo>(executionInfoKey);
 
-                easyTests = easyTests.Select(test => unitOfWork.GetObjectByKey<EasyTest>(test.Oid)).ToArray();
-                var runningInfosCount = executionInfo.EasyTestRunningInfos.Count();
-                if (runningInfosCount < executionInfo.WindowsUsers.Count()) {
-                    var easyTest = GetFirstRunEasyTest(easyTests, executionInfo, rdc) ?? GetFailedEasyTest(easyTests, executionInfo, rdc);
-                    if (easyTest != null) {
-                        easyTest.LastEasyTestExecutionInfo.State = EasyTestState.Running;
-                        easyTest.Session.ValidateAndCommitChanges();
-                        return easyTest;
+                    easyTests = easyTests.Select(test => unitOfWork.GetObjectByKey<EasyTest>(test.Oid)).ToArray();
+                    var runningInfosCount = executionInfo.RunningTests.Count();
+                    if (runningInfosCount < executionInfo.WindowsUsers.Count()) {
+                        var firstRunEasyTest = GetFirstRunEasyTest(easyTests, executionInfo);
+                        var easyTest = firstRunEasyTest ?? GetFailedEasyTest(easyTests, executionInfo, rdc);
+                        if (easyTest != null) {
+                            easyTest.LastEasyTestExecutionInfo.State = EasyTestState.Running;
+                            easyTest.Session.ValidateAndCommitChanges();
+                            return easyTest;
+                        }
                     }
                 }
+                return null;
+                
             }
-            return null;
         }
 
         private static EasyTest GetFailedEasyTest(EasyTest[] easyTests, ExecutionInfo executionInfo, bool useCustomPort) {
@@ -304,15 +301,12 @@ namespace XpandTestExecutor.Module.Services {
             return null;
         }
 
-        private static EasyTest GetFirstRunEasyTest(IEnumerable<EasyTest> easyTests, ExecutionInfo executionInfo, bool useCustomPort) {
+        private static EasyTest GetFirstRunEasyTest(IEnumerable<EasyTest> easyTests, ExecutionInfo executionInfo) {
             var easyTest = GetEasyTest(easyTests, executionInfo, 0);
             if (easyTest != null) {
                 var windowsUser = executionInfo.GetNextUser(easyTest);
                 if (windowsUser != null) {
-                    if (executionInfo.FinishedTests.Contains(easyTest.LastEasyTestExecutionInfo.EasyTest))
-                        easyTest.CreateExecutionInfo(useCustomPort, executionInfo, windowsUser);
-                    easyTest.LastEasyTestExecutionInfo.WindowsUser = windowsUser;
-                    
+                    easyTest.LastEasyTestExecutionInfo.WindowsUser=windowsUser;
                     return easyTest;
                 }
             }

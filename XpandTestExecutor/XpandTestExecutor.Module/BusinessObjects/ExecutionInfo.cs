@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using DevExpress.EasyTest.Framework;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Xpo;
@@ -29,16 +28,22 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [Association("EasyTestExecutionInfo-ExecutionInfos")]
         public XPCollection<EasyTestExecutionInfo> EasyTestExecutionInfos => GetCollection<EasyTestExecutionInfo>("EasyTestExecutionInfos");
 
-        public XPCollection<EasyTestExecutionInfo> EasyTestRunningInfos {
-            get {
-                return new XPCollection<EasyTestExecutionInfo>(Session, EasyTestExecutionInfos.Where(info => info.State == EasyTestState.Running));
-            }
-        }
 
         public XPCollection<EasyTest> FinishedTests {
             get{
                 var passedTests = PassedEasyTests.Distinct();
                 return new XPCollection<EasyTest>(Session, FailedTests.Concat(passedTests));
+            }
+        }
+        public XPCollection<EasyTest> EasyTests {
+            get{
+                return new XPCollection<EasyTest>(Session, EasyTestExecutionInfos.Select(info => info.EasyTest));
+            }
+        }
+        public XPCollection<EasyTest> RunningTests {
+            get{
+                var runningInfos = EasyTestExecutionInfos.GroupBy(info => info.EasyTest).Where(infos => infos.Count(info => info.State==EasyTestState.Running)==1).Select(infos => infos.Key);
+                return new XPCollection<EasyTest>(Session, runningInfos.Except(FailedTests).Except(PassedEasyTests));
             }
         }
 
@@ -73,7 +78,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         private bool Failure(IGrouping<EasyTest, EasyTestExecutionInfo> infos){
-            return infos.Count() == Retries + 1&&infos.All(info => info.State==EasyTestState.Failed );
+            return infos.Count() >= Retries;
         }
 
 
@@ -101,27 +106,22 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         public EasyTest[] GetTestsToExecute(int retries){
-            return GetTestsToExecuteCore(retries).Except(GetNonIISRunning()).ToArray();
+            return GetTestsToExecuteCore(retries).ToArray();
         }
 
         public IEnumerable<EasyTest> LastExecutionFailures(){
             var sequence = Session.Query<ExecutionInfo>().Where(info => info.Sequence<Sequence).Max(info => info.Sequence);
             var executionInfo = Session.Query<ExecutionInfo>().First(info => info.Sequence==sequence);
-            return executionInfo.FailedTests;
+            return executionInfo.PassedEasyTests;
         }
 
-        private IEnumerable<EasyTest> GetNonIISRunning(){
-            var nonIISRunning = EasyTestRunningInfos.Where(info => info.EasyTest.Options.Applications.Cast<TestApplication>()
-                .Any(application => application.AdditionalAttributes.Any(attribute => attribute.LocalName == "DontUseIIS")));
-            return nonIISRunning.Select(info => info.EasyTest);
-        }
 
         private EasyTest[] GetTestsToExecuteCore(int retries){
             if (retries == 0){
                 var lastExecutionFailures = LastExecutionFailures().ToArray();
                 if (lastExecutionFailures.Any()){
                     if (FinishedTests.Count < lastExecutionFailures.Length){
-                        var tests = lastExecutionFailures.Except(FinishedTests).Except(EasyTestRunningInfos.Select(info => info.EasyTest));
+                        var tests = lastExecutionFailures.Except(FinishedTests).Except(RunningTests);
                         var easyTests = tests.Except(PassedEasyTests);
                         return easyTests.ToArray();
                     }
@@ -130,12 +130,16 @@ namespace XpandTestExecutor.Module.BusinessObjects {
                     GetFirstRunEasyTests().Select(test => new { Test = test, Duration = test.LastPassedDuration() });
                 return firstRunEasyTests.Select(arg => arg.Test).ToArray();
             }
-            return EasyTestExecutionInfos.GroupBy(executionInfo => executionInfo.EasyTest).ToArray()
-                .Where(infos => infos.All(info => info.State == EasyTestState.Failed) && infos.Count() == retries)
-                .Select(infos => new{Test = infos.Key, Count = infos.Count()})
-                .OrderBy(arg => arg.Count)
-                .Select(arg => arg.Test)
-                .ToArray();
+            Tracing.Tracer.LogValue("EasyTests",EasyTests.Count);
+            Tracing.Tracer.LogValue("FinishedTests", FinishedTests.Count);
+            Tracing.Tracer.LogValue("RunningTests", RunningTests.Count);
+            return EasyTests.Except(FinishedTests).Except(RunningTests).ToArray();
+//            return EasyTestExecutionInfos.GroupBy(executionInfo => executionInfo.EasyTest).ToArray()
+//                .Where(infos => infos.All(info => info.State == EasyTestState.Failed) && infos.Count() == retries)
+//                .Select(infos => new{Test = infos.Key, Count = infos.Count()})
+//                .OrderBy(arg => arg.Count)
+//                .Select(arg => arg.Test)
+//                .ToArray();
         }
 
         public bool FailedAgain() {
@@ -158,7 +162,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         public IEnumerable<WindowsUser> GetIdleUsers() {
-            var users = EasyTestRunningInfos.Select(info => info.WindowsUser).Distinct();
+            var users = RunningTests.Select(test => test.LastEasyTestExecutionInfo).Select(info => info.WindowsUser).Distinct();
             return WindowsUsers.Except(users);
         }
 

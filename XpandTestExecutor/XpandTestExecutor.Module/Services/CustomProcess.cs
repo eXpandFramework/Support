@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +27,13 @@ namespace XpandTestExecutor.Module.Services{
 
         public void Start(CancellationToken token, int timeout){
             if (_rdc){
-                Tracing.Tracer.LogValue("StartServerStream", _windowsUser.Name);
+                Tracing.Tracer.LogValue(_easyTest, "StartServerStream");
                 _serverStream = new NamedPipeServerStream(_windowsUser.Name, PipeDirection.InOut, 1);
                 Task.Factory.StartNew(() => StartClient(token,timeout), token,TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(timeout).ContinueWith(
-                    task =>Tracing.Tracer.LogValue("StartClient-Timeout",_windowsUser.Name),token);
-                Tracing.Tracer.LogValue("WaitForConnection", _windowsUser.Name);
+                    task =>{Tracing.Tracer.LogValue(_easyTest, IsTimeout(task) ? "StartClient-Timeout" : "StartClient-Finished-Success");},token);
+                Tracing.Tracer.LogValue( _easyTest, "WaitForConnection");
                 _serverStream.WaitForConnection();
-                Tracing.Tracer.LogValue("GetSessionId", _windowsUser.Name);
+                Tracing.Tracer.LogValue(_easyTest, "GetSessionId");
                 var sessionId = GetSessionId();
                 StartInfo=CreateStartInfo(sessionId);
             }
@@ -40,6 +41,10 @@ namespace XpandTestExecutor.Module.Services{
                 StartInfo=CreateStartInfo();
             }
             Start();
+        }
+
+        private bool IsTimeout(Task task){
+            return task.Exception != null && task.Exception.InnerExceptions.OfType<TimeoutException>().Any();
         }
 
         private void StartClient(CancellationToken token, int timeout){
@@ -62,18 +67,17 @@ namespace XpandTestExecutor.Module.Services{
             return Convert.ToInt32(streamString.ReadString());
         }
 
-        public void CloseRDClient(int timeout){
+        public void CloseRDClient(){
             if (_serverStream != null){
-                var wait = Task.Factory.StartNew(() =>{
-                    var streamString = new StreamString(_serverStream);
-                    streamString.WriteString(true.ToString());
-                    _serverStream.WaitForPipeDrain();
-                    _serverStream.Close();
-                    _serverStream.Dispose();
-                }).Wait(timeout);
-                if (!wait){
-                    Tracing.Tracer.LogValue("RDClient-_serverStream", _easyTest.Name);
-                }
+                var streamString = new StreamString(_serverStream);
+                Tracing.Tracer.LogValue(_easyTest, "WriteString");
+                streamString.WriteString(true.ToString());
+                Tracing.Tracer.LogValue(_easyTest, "WaitForPipeDrain");
+                _serverStream.WaitForPipeDrain();
+                Tracing.Tracer.LogValue(_easyTest, "PipeDrain");
+                _serverStream.Close();
+                _serverStream.Dispose();
+                Tracing.Tracer.LogValue(_easyTest, "Dispose");
             }
         }
 

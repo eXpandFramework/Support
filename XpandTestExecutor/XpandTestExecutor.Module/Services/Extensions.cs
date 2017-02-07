@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using DevExpress.EasyTest.Framework;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.Xpo;
+using DevExpress.Persistent.Base;
 using DevExpress.Persistent.Validation;
 using DevExpress.Xpo;
 using XpandTestExecutor.Module.BusinessObjects;
@@ -12,6 +13,10 @@ using XpandTestExecutor.Module.BusinessObjects;
 namespace XpandTestExecutor.Module.Services {
 
     public static class Extensions {
+
+        public static void LogValue(this Tracing tracing, EasyTest easyTest, string valueName){
+            Tracing.Tracer.LogValue(valueName, easyTest.Name);
+        }
 
         public static void ValidateAndCommitChanges(this Session session) {
             var unitOfWork = ((UnitOfWork)session);
