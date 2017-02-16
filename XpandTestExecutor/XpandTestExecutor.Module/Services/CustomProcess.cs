@@ -30,7 +30,14 @@ namespace XpandTestExecutor.Module.Services{
                 Tracing.Tracer.LogValue(_easyTest, "StartServerStream");
                 _serverStream = new NamedPipeServerStream(_windowsUser.Name, PipeDirection.InOut, 1);
                 Task.Factory.StartNew(() => StartClient(token,timeout), token,TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(timeout).ContinueWith(
-                    task =>{Tracing.Tracer.LogValue(_easyTest, IsTimeout(task) ? "StartClient-Timeout" : "StartClient-Finished-Success");},token);
+                    task =>{
+                        var isTimeout = IsTimeout(task);
+                        if (isTimeout){
+                            _serverStream.Disconnect();
+                            _serverStream.Close();
+                        }
+                        Tracing.Tracer.LogValue(_easyTest, isTimeout ? "StartClient-Timeout" : "StartClient-Finished-Success");
+                    },token);
                 Tracing.Tracer.LogValue( _easyTest, "WaitForConnection");
                 _serverStream.WaitForConnection();
                 Tracing.Tracer.LogValue(_easyTest, "GetSessionId");
@@ -75,8 +82,8 @@ namespace XpandTestExecutor.Module.Services{
                 Tracing.Tracer.LogValue(_easyTest, "WaitForPipeDrain");
                 _serverStream.WaitForPipeDrain();
                 Tracing.Tracer.LogValue(_easyTest, "PipeDrain");
+                _serverStream.Disconnect();
                 _serverStream.Close();
-                _serverStream.Dispose();
                 Tracing.Tracer.LogValue(_easyTest, "Dispose");
             }
         }

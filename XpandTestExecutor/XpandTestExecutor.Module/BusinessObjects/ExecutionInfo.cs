@@ -78,7 +78,8 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         private bool Failure(IGrouping<EasyTest, EasyTestExecutionInfo> infos){
-            return infos.Count() >= Retries;
+            return (infos.Count() >= Retries 
+                || infos.Count(info => info.State == EasyTestState.NotStarted|| info.State == EasyTestState.Running) > 1);
         }
 
 
@@ -118,28 +119,22 @@ namespace XpandTestExecutor.Module.BusinessObjects {
 
         private EasyTest[] GetTestsToExecuteCore(int retries){
             if (retries == 0){
-                var lastExecutionFailures = LastExecutionFailures().ToArray();
-                if (lastExecutionFailures.Any()){
-                    if (FinishedTests.Count < lastExecutionFailures.Length){
-                        var tests = lastExecutionFailures.Except(FinishedTests).Except(RunningTests);
-                        var easyTests = tests.Except(PassedEasyTests);
-                        return easyTests.ToArray();
-                    }
-                }
-                var firstRunEasyTests =
-                    GetFirstRunEasyTests().Select(test => new { Test = test, Duration = test.LastPassedDuration() });
-                return firstRunEasyTests.Select(arg => arg.Test).ToArray();
+                //                var lastExecutionFailures = LastExecutionFailures().ToArray();
+                //                if (lastExecutionFailures.Any()){
+                //                    if (FinishedTests.Count < lastExecutionFailures.Length){
+                //                        var tests = lastExecutionFailures.Except(FinishedTests).Except(RunningTests);
+                //                        var easyTests = tests.Except(PassedEasyTests);
+                //                        return easyTests.ToArray();
+                //                    }
+                //                }
+                
+                return GetNextRunEasyTests(infos => ((infos.Count() == 1 && infos.First().State == EasyTestState.NotStarted))).ToArray();
+                
             }
             Tracing.Tracer.LogValue("EasyTests",EasyTests.Count);
             Tracing.Tracer.LogValue("FinishedTests", FinishedTests.Count);
             Tracing.Tracer.LogValue("RunningTests", RunningTests.Count);
-            return EasyTests.Except(FinishedTests).Except(RunningTests).ToArray();
-//            return EasyTestExecutionInfos.GroupBy(executionInfo => executionInfo.EasyTest).ToArray()
-//                .Where(infos => infos.All(info => info.State == EasyTestState.Failed) && infos.Count() == retries)
-//                .Select(infos => new{Test = infos.Key, Count = infos.Count()})
-//                .OrderBy(arg => arg.Count)
-//                .Select(arg => arg.Test)
-//                .ToArray();
+            return GetNextRunEasyTests(infos => ((infos.Count() == retries && infos.All(info => info.State==EasyTestState.Failed)))).ToArray();
         }
 
         public bool FailedAgain() {
@@ -151,9 +146,9 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             return false;
         }
 
-        private IEnumerable<EasyTest> GetFirstRunEasyTests() {
+        private EasyTest[] GetNextRunEasyTests(Func<IGrouping<EasyTest, EasyTestExecutionInfo>, bool> filter) {
             var execInfos = EasyTestExecutionInfos.GroupBy(info => info.EasyTest)
-                .Where(infos => ((infos.Count() == 1 && infos.First().State == EasyTestState.NotStarted)));
+                .Where(filter);
             return execInfos.SelectMany(infos => infos).Select(info => info.EasyTest).Distinct().OrderByDescending(test => test.LastPassedDuration()).ToArray();
         }
 
