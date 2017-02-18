@@ -78,8 +78,9 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         private bool Failure(IGrouping<EasyTest, EasyTestExecutionInfo> infos){
-            return (infos.Count() >= Retries 
-                || infos.Count(info => info.State == EasyTestState.NotStarted|| info.State == EasyTestState.Running) > 1);
+            var invalidState = infos.Count(info => info.State == EasyTestState.NotStarted|| info.State == EasyTestState.Running);
+            var inProgress = infos.Count(info => info.State!=EasyTestState.Running&&info.State!=EasyTestState.NotStarted);
+            return (inProgress >= Retries || invalidState > 1);
         }
 
 

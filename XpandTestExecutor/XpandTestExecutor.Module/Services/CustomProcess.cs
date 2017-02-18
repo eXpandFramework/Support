@@ -29,15 +29,8 @@ namespace XpandTestExecutor.Module.Services{
             if (_rdc){
                 Tracing.Tracer.LogValue(_easyTest, "StartServerStream");
                 _serverStream = new NamedPipeServerStream(_windowsUser.Name, PipeDirection.InOut, 1);
-                Task.Factory.StartNew(() => StartClient(token,timeout), token,TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(timeout).ContinueWith(
-                    task =>{
-                        var isTimeout = IsTimeout(task);
-                        if (isTimeout){
-                            _serverStream.Disconnect();
-                            _serverStream.Close();
-                        }
-                        Tracing.Tracer.LogValue(_easyTest, isTimeout ? "StartClient-Timeout" : "StartClient-Finished-Success");
-                    },token);
+                StartClient(token, timeout);
+//                Task.Factory.StartNew(() => StartClient(token,timeout), token,TaskCreationOptions.AttachedToParent,TaskScheduler.Current);
                 Tracing.Tracer.LogValue( _easyTest, "WaitForConnection");
                 _serverStream.WaitForConnection();
                 Tracing.Tracer.LogValue(_easyTest, "GetSessionId");
@@ -48,10 +41,6 @@ namespace XpandTestExecutor.Module.Services{
                 StartInfo=CreateStartInfo();
             }
             Start();
-        }
-
-        private bool IsTimeout(Task task){
-            return task.Exception != null && task.Exception.InnerExceptions.OfType<TimeoutException>().Any();
         }
 
         private void StartClient(CancellationToken token, int timeout){
@@ -66,7 +55,7 @@ namespace XpandTestExecutor.Module.Services{
                 StartInfo = processStartInfo
             };
             rdClientProcess.Start();
-            rdClientProcess.WaitForExit(timeout);
+//            rdClientProcess.WaitForExit(timeout);
         }
 
         private int GetSessionId(){

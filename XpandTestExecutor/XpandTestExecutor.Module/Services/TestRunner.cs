@@ -223,16 +223,28 @@ namespace XpandTestExecutor.Module.Services {
             string fileName = null;
             try {
                 var dataLayer = GetDatalayer();
-                var executionInfoKey = CreateExecutionInfoKey(dataLayer, rdc, easyTests);
+                var executionInfo = CreateExecutionInfo(dataLayer, rdc, easyTests);
+                int runningUsers = 0;
+                bool executionFinished = false;
+                
                 do {
+                    
                     token.ThrowIfCancellationRequested();
-                    var easyTest = GetNextEasyTest(executionInfoKey, easyTests, dataLayer, rdc);
-                    if (easyTest != null) {
+                    var easyTest = GetNextEasyTest(executionInfo.Key, easyTests, dataLayer, rdc);
+                    if (easyTest != null&& runningUsers < executionInfo.Value) {
                         fileName = easyTest.FileName;
-                        Task.Factory.StartNew(() => RunTest(easyTest.Oid, dataLayer, rdc,debugMode,token),token, TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(easyTest.Options.DefaultTimeout*60*1000);
+                        Task.Factory.StartNew(() =>{
+                                runningUsers++;
+                                RunTest(easyTest.Oid, dataLayer, rdc, debugMode, token);
+                            },token, TaskCreationOptions.AttachedToParent,TaskScheduler.Current).TimeoutAfter(easyTest.Options.DefaultTimeout*60*1000).ContinueWith(task =>{
+                                runningUsers--;
+                            }, token);
                     }
                     Thread.Sleep(2000);
-                } while (!ExecutionFinished(dataLayer, executionInfoKey, easyTests.Length));
+                    if (runningUsers==0)
+                        executionFinished = ExecutionFinished(dataLayer, executionInfo.Key, easyTests.Length);
+                    
+                } while (!executionFinished);
             }
             catch (Exception e) {
                 LastCleanup(easyTests, token);
@@ -246,8 +258,7 @@ namespace XpandTestExecutor.Module.Services {
             return xpObjectSpaceProvider.CreateObjectSpace().Session().DataLayer;
         }
 
-        private static Guid CreateExecutionInfoKey(IDataLayer dataLayer, bool rdc, EasyTest[] easyTests) {
-            Guid executionInfoKey;
+        private static KeyValuePair<Guid, int> CreateExecutionInfo(IDataLayer dataLayer, bool rdc, EasyTest[] easyTests) {
             using (var unitOfWork = new UnitOfWork(dataLayer)) {
                 var executionInfo = ExecutionInfo.Create(unitOfWork, rdc, ((IModelOptionsTestExecutor)CaptionHelper.ApplicationModel.Options).ExecutionRetries);
                 if (rdc)
@@ -259,9 +270,10 @@ namespace XpandTestExecutor.Module.Services {
                 unitOfWork.ValidateAndCommitChanges();
                 CurrentSequenceOperator.CurrentSequence = executionInfo.Sequence;
                 Tracing.Tracer.LogText("CurrentSequence", CurrentSequenceOperator.CurrentSequence);
-                executionInfoKey = executionInfo.Oid;
+                var executionInfoKey = executionInfo.Oid;
+                return new KeyValuePair<Guid, int>(executionInfoKey, executionInfo.WindowsUsers.Count);
             }
-            return executionInfoKey;
+            
         }
 
         private static EasyTest GetNextEasyTest(Guid executionInfoKey, EasyTest[] easyTests, IDataLayer dataLayer, bool rdc) {
