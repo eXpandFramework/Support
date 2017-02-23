@@ -11,6 +11,8 @@ namespace RDClient{
 
         [Option('p', "password", Required = true, HelpText = "The user password")]
         public string Password { get; set; }
+        [Option('n', "pipe", Required = true, HelpText = "The pipe name")]
+        public string PipeName { get; set; }
         
         [Option('d', "domain",  HelpText = "The network domain")]
         public string Domain { get; set; }

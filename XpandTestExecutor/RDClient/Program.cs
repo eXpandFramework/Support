@@ -20,7 +20,7 @@ namespace RDClient {
             bool arguments = Parser.Default.ParseArguments(args, Options.Instance);
             try{
                 if (arguments) {
-                    var pipeClient = new NamedPipeClientStream(".", Options.Instance.UserName,
+                    var pipeClient = new NamedPipeClientStream(".", Options.Instance.PipeName,
                         PipeDirection.InOut, PipeOptions.None,
                         TokenImpersonationLevel.Impersonation);
                     pipeClient.Connect();

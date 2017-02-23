@@ -2,12 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using DevExpress.Persistent.Base;
-using Xpand.Utils.Threading;
 using XpandTestExecutor.Module.BusinessObjects;
 
 namespace XpandTestExecutor.Module.Services{
@@ -28,8 +25,9 @@ namespace XpandTestExecutor.Module.Services{
         public void Start(CancellationToken token, int timeout){
             if (_rdc){
                 Tracing.Tracer.LogValue(_easyTest, "StartServerStream");
-                _serverStream = new NamedPipeServerStream(_windowsUser.Name, PipeDirection.InOut, 1);
-                StartClient(token, timeout);
+                var pipeName = Guid.NewGuid().ToString();
+                _serverStream = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1);
+                StartClient(token, timeout, pipeName);
 //                Task.Factory.StartNew(() => StartClient(token,timeout), token,TaskCreationOptions.AttachedToParent,TaskScheduler.Current);
                 Tracing.Tracer.LogValue( _easyTest, "WaitForConnection");
                 _serverStream.WaitForConnection();
@@ -43,11 +41,20 @@ namespace XpandTestExecutor.Module.Services{
             Start();
         }
 
-        private void StartClient(CancellationToken token, int timeout){
+        protected override void Dispose(bool disposing){
+            base.Dispose(disposing);
+            if (_serverStream != null){
+                if (_serverStream.IsConnected)
+                    _serverStream.Disconnect();
+                _serverStream.Close();
+            }
+        }
+
+        private void StartClient(CancellationToken token, int timeout, string pipeName){
             token.ThrowIfCancellationRequested();
             string domain =!string.IsNullOrEmpty(WindowsUser.Domain)? " -d " + WindowsUser.Domain:null;
             var processStartInfo = new ProcessStartInfo("RDClient.exe",
-                "-u " + _windowsUser.Name + " -p " + _windowsUser.Password +" -m "+timeout+ domain){
+                " -n "+pipeName+" -u " + _windowsUser.Name + " -p " + _windowsUser.Password +" -m "+timeout+ domain){
                     FileName = "RDClient.exe",
                     CreateNoWindow = true,WorkingDirectory = Path.GetDirectoryName(_easyTest.FileName)+""
                 };
