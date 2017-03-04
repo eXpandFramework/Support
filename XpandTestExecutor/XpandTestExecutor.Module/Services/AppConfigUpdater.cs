@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using DevExpress.EasyTest.Framework;
+using Xpand.Utils.Helpers;
 using XpandTestExecutor.Module.BusinessObjects;
 
 namespace XpandTestExecutor.Module.Services {
@@ -23,7 +25,8 @@ namespace XpandTestExecutor.Module.Services {
                 var sourcePath = Path.GetFullPath(alias.UpdateAppPath(null,true));
                 if (!unlink&&Directory.Exists(sourcePath)) {
                     var destPath = Path.GetFullPath(alias.UpdateAppPath(user.Name));
-                    Delete(destPath);
+                    Retry.Do(() => { Delete(destPath); }, TimeSpan.FromSeconds(10));
+                    
                     DirectoryCopy(sourcePath, destPath, true, sourcePath + @"\" + TestRunner.EasyTestUsersDir);
                     UpdateAppConfig(easyTestExecutionInfo,  alias,  false);
                 }
