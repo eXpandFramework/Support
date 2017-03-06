@@ -27,11 +27,10 @@ namespace PDBLinker {
             var projectFiles = new List<string>();
             projectFiles.AddRange(Directory.GetFiles(options.SourceDir, "*.csproj", SearchOption.AllDirectories));
             projectFiles.AddRange(Directory.GetFiles(options.SourceDir, "*.vbproj", SearchOption.AllDirectories));
-            var failedProjects = new List<KeyValuePair<string,string>>();
             var projects = GetProjects(projectFiles);
-            _logger.Info(string.Format("Found '{0}' project(s)", projectFiles.Count));
+            _logger.Info($"Found '{projectFiles.Count}' project(s)");
             var pdbFiles = Directory.GetFiles(options.PDBDir, "*.pdb").ToArray();
-            _logger.Info(string.Format("Found '{0}' pdb files", pdbFiles.Length));
+            _logger.Info($"Found '{pdbFiles.Length}' pdb files");
             foreach (var pdbFile in pdbFiles){
                 var currentProject = projects.FirstOrDefault(project => Path.GetFileName(project.GetOutputPdbFile()) == Path.GetFileName(pdbFile));
                 if (currentProject!=null){
@@ -40,7 +39,6 @@ namespace PDBLinker {
                     var writeSrcSrv = pdbStoreManager.WriteSrcSrv(pdbFile, srcSrvSection);
                     var fileName = Path.GetFileNameWithoutExtension(pdbFile);
                     if (!string.IsNullOrEmpty(writeSrcSrv)){
-                        failedProjects.Add(new KeyValuePair<string,string>(pdbFile,writeSrcSrv));
                         _logger.Error(fileName+"-->"+writeSrcSrv);
                     }
                     else{
@@ -48,7 +46,6 @@ namespace PDBLinker {
                     }
                 }
                 else{
-                    failedProjects.Add(new KeyValuePair<string, string>(pdbFile,"Project not found"));
                     _logger.Error(pdbFile +"-->Project not found");
                 }
             }
@@ -82,10 +79,10 @@ namespace PDBLinker {
             if (indexedFiles.Any()){
                 var longestDir = Enumerable.Range(0, indexedFiles.Min(s => s.Length)).Reverse()
                 .Select(len => new { len, possibleMatch = indexedFiles.First().Substring(0, len) })
-                .Where(@t => indexedFiles.All(f => f.StartsWith(@t.possibleMatch)))
-                .Select(@t => @t.possibleMatch).First();
+                .Where(t => indexedFiles.All(f => f.StartsWith(t.possibleMatch)))
+                .Select(t => t.possibleMatch).First();
                 return compilableItems.Select(compilableItem => new { compilableItem, targetPath = Path.Combine(currentProject.DirectoryPath, compilableItem.EvaluatedInclude) })
-                        .Select(@t => Path.Combine(longestDir, @t.compilableItem.EvaluatedInclude) + "*" + @t.targetPath);
+                        .Select(t => Path.Combine(longestDir, t.compilableItem.EvaluatedInclude) + "*" + @t.targetPath);
             }
             return Enumerable.Empty<string>();
         }
