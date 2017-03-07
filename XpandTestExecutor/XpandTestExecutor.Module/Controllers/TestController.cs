@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.Actions;
 using DevExpress.ExpressApp.Model;
@@ -50,6 +52,7 @@ namespace XpandTestExecutor.Module.Controllers {
 
         public bool IsDebug => _testControllerHelper.ExecutionModeAction.SelectedItem.Caption == "Debug";
 
+        
         private void UnlinkTestActionOnExecute(object sender, SimpleActionExecuteEventArgs e) {
             var easyTests = e.SelectedObjects.Cast<EasyTest>().ToArray();
             OptionsProvider.Init(easyTests.Select(test => test.FileName).ToArray());
@@ -57,41 +60,44 @@ namespace XpandTestExecutor.Module.Controllers {
                 var fileNames = File.ReadAllLines("easytests.txt").Where(s => !string.IsNullOrEmpty(s)).ToArray();
                 easyTests = EasyTest.GetTests(ObjectSpace, fileNames);
             }
-            foreach (var info in easyTests.SelectMany(test => test.GetCurrentSequenceInfos())) {
+            foreach (var info in easyTests.SelectMany(GetUISequenceInfos)) {
                 info.WindowsUser = WindowsUser.CreateUsers((UnitOfWork)ObjectSpace.Session(), false).First();
-                info.Setup(true);
+                info.Unlink();
             }
             ObjectSpace.RollbackSilent();
 
         }
 
-        private void RunTestActionOnExecute(object sender, SimpleActionExecuteEventArgs e) {
-            var rdc = IsRDC();
+        private IEnumerable<EasyTestExecutionInfo> GetUISequenceInfos(EasyTest test){
+            return new XPCollection<EasyTestExecutionInfo>(test.Session,
+                test.EasyTestExecutionInfos.Where(
+                    info => info.ExecutionInfo.Sequence == CurrentSequenceOperator.CurrentSequence));
+        }
+
+    private void RunTestActionOnExecute(object sender, SimpleActionExecuteEventArgs e) {
             if (_runTestAction.Caption==CancelRun){
                 _runTestAction.Enabled[CancelRun] = false;
                 _cancellationTokenSource?.Cancel();
             }
             else if (ReferenceEquals(SelectionModeAction.SelectedItem.Data, TestControllerHelper.Selected)){
                 _runTestAction.Caption = CancelRun;
-                if (!rdc){
-                    _unlinkTestAction.DoExecute();
-                }
-                _cancellationTokenSource = TestRunner.Execute(e.SelectedObjects.Cast<EasyTest>().ToArray(), rdc, IsDebug,
-                    task =>{
-                        _runTestAction.Caption = Run;
-                        _runTestAction.Enabled[CancelRun] = true;
-                    });
+                _unlinkTestAction.DoExecute();
+                _cancellationTokenSource=new CancellationTokenSource();
+                var easyTestFiles = e.SelectedObjects.Cast<EasyTest>().Select(test => test.FileName).ToArray();
+                Task.Factory.StartNew(() => TestExecutor.Execute(easyTestFiles, IsDebug, _cancellationTokenSource.Token,
+                        ((IModelOptionsTestExecutor) Application.Model.Options).ExecutionRetries))
+                    .ContinueWith(
+                        task =>{
+                            _runTestAction.Caption = Run;
+                            _runTestAction.Enabled[CancelRun] = true;
+                        });
             }
             else{
-                var fileName = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "EasyTests.txt");
-                TestRunner.Execute(fileName, rdc);
+                throw new NotImplementedException();
             }
         }
 
 
-        private bool IsRDC(){
-            return SelectionModeAction.Active && ReferenceEquals(UserModeAction.SelectedItem.Data, TestControllerHelper.RDC);
-        }
 
         public void ExtendModelInterfaces(ModelInterfaceExtenders extenders) {
             extenders.Add<IModelOptions, IModelOptionsTestExecutor>();

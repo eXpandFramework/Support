@@ -14,6 +14,10 @@ namespace XpandTestExecutor.Module.Services {
 
     public static class Extensions {
 
+        public static void LogValue(this Tracing tracing, EasyTestExecutionInfo easyTestExecutionInfo, string valueName){
+            tracing.LogValue(easyTestExecutionInfo.EasyTest, valueName);
+        }
+
         public static void LogValue(this Tracing tracing, EasyTest easyTest, string valueName){
             Tracing.Tracer.LogValue(valueName, easyTest.Name);
         }
@@ -57,7 +61,7 @@ namespace XpandTestExecutor.Module.Services {
         public static string UpdateAppPath(this TestAlias alias, string userName,bool unlink=false) {
             if (unlink)
                 userName = null;
-            string containerDir = unlink? null : TestRunner.EasyTestUsersDir + @"\";
+            string containerDir = unlink? null : TestExecutor.EasyTestUsersDir + @"\";
             return IsWinAppPath(alias)
                 ? Regex.Replace(alias.Value, @"(.*\\Bin\\)(.*)", @"$1EasyTest\" + containerDir + userName,
                     RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Multiline)

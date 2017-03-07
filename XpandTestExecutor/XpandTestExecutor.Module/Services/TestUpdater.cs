@@ -75,17 +75,17 @@ namespace XpandTestExecutor.Module.Services {
                 var xmlAttribute = testApplication.AdditionalAttributes.FirstOrDefault(attribute => attribute.Name=="FileName");                
                 if (xmlAttribute != null) {
                     if (CanModifyFileName(xmlAttribute,easyTestExecutionInfo.WindowsUser.Name)) {
-                        var newPath =!xmlAttribute.Value.Contains(TestRunner.EasyTestUsersDir)? Path.Combine(Path.GetDirectoryName(xmlAttribute.Value) + @"\",
-                            TestRunner.EasyTestUsersDir + @"\" + easyTestExecutionInfo.WindowsUser.Name) : Path.GetDirectoryName(xmlAttribute.Value)+"";
+                        var newPath =!xmlAttribute.Value.Contains(TestExecutor.EasyTestUsersDir)? Path.Combine(Path.GetDirectoryName(xmlAttribute.Value) + @"\",
+                            TestExecutor.EasyTestUsersDir + @"\" + easyTestExecutionInfo.WindowsUser.Name) : Path.GetDirectoryName(xmlAttribute.Value)+"";
                         ModifyFileName(xmlAttribute, Path.Combine(newPath,Path.GetFileName(xmlAttribute.Value)), easyTestExecutionInfo.WindowsUser.Name);
                     }
                 }
                 else {
                     xmlAttribute = testApplication.AdditionalAttributes.First(attribute => attribute.Name == "PhysicalPath");
                     if (CanModifyFileName(xmlAttribute, easyTestExecutionInfo.WindowsUser.Name)){
-                        if (!xmlAttribute.Value.Contains(TestRunner.EasyTestUsersDir))
+                        if (!xmlAttribute.Value.Contains(TestExecutor.EasyTestUsersDir))
                             xmlAttribute.Value = Path.Combine(xmlAttribute.Value,
-                                TestRunner.EasyTestUsersDir + @"\" + easyTestExecutionInfo.WindowsUser.Name);
+                                TestExecutor.EasyTestUsersDir + @"\" + easyTestExecutionInfo.WindowsUser.Name);
                         ModifyFileName(xmlAttribute, xmlAttribute.Value, easyTestExecutionInfo.WindowsUser.Name);
                     }
                 }
@@ -93,12 +93,12 @@ namespace XpandTestExecutor.Module.Services {
         }
 
         private static void ModifyFileName(XmlAttribute xmlAttribute, string path, string userName) {
-            xmlAttribute.Value = Regex.Replace(path, @"(.*" +TestRunner.EasyTestUsersDir+ @"\\)([\w]*)(.*)", "$1" +userName+ "$3",
+            xmlAttribute.Value = Regex.Replace(path, @"(.*" +TestExecutor.EasyTestUsersDir+ @"\\)([\w]*)(.*)", "$1" +userName+ "$3",
                 RegexOptions.Singleline | RegexOptions.IgnoreCase);
         }
 
         private static bool CanModifyFileName(XmlAttribute xmlAttribute,string userName) {
-            if (xmlAttribute.Value.Contains(TestRunner.EasyTestUsersDir)) {
+            if (xmlAttribute.Value.Contains(TestExecutor.EasyTestUsersDir)) {
                 var directoryName = Path.GetDirectoryName(Path.GetFullPath(xmlAttribute.Value)) + "";
                 return new DirectoryInfo(directoryName).Name != userName;
             }

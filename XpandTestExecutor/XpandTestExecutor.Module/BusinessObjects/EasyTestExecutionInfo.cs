@@ -24,6 +24,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         private EasyTestState _state;
         private int _webPort;
         private int _winPort;
+       
 
         public EasyTestExecutionInfo(Session session)
             : base(session) {
@@ -32,6 +33,10 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         public string TestsLog {
             get { return GetDelayedPropertyValue<string>("TestsLog"); }
             set { SetDelayedPropertyValue("TestsLog", value); }
+        }
+
+        public override string ToString(){
+            return State.ToString();
         }
 
         [Size(SizeAttribute.Unlimited), Delayed]
@@ -113,7 +118,9 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         public EasyTestState State {
-            get { return _state; }
+            get{
+                return IsTimeouted ? EasyTestState.Failed : _state;
+            }
             set { SetPropertyValue("State", ref _state, value); }
         }
 
@@ -127,6 +134,10 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         public long Sequence { get; set; }
 
         string ISupportSequenceObject.Prefix => ((ISupportSequenceObject)EasyTest).Sequence.ToString(CultureInfo.InvariantCulture);
+
+        [Browsable(false)]
+        public bool IsTimeouted => Start != DateTime.MinValue &&
+                                   (DateTime.Now - Start).TotalMinutes + 1 > EasyTest.Options.DefaultTimeout;
 
         public void SetView(bool win, Image view) {
             if (win)
@@ -198,7 +209,6 @@ namespace XpandTestExecutor.Module.BusinessObjects {
     }
 
     public enum EasyTestState {
-        NotStarted,
         Running,
         Failed,
         Passed

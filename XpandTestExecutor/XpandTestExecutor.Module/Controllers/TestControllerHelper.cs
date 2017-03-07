@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Security.Principal;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.Actions;
 using DevExpress.Persistent.Base;
@@ -10,7 +8,7 @@ namespace XpandTestExecutor.Module.Controllers {
 
         internal const string Selected = "Selected";
         internal const string FromFile = "FromFile";
-        internal const string RDC = "RDC";
+        
         private const string Current = "Current";
         private readonly SingleChoiceAction _userModeAction;
         private readonly SingleChoiceAction _selectionModeAction;
@@ -21,7 +19,6 @@ namespace XpandTestExecutor.Module.Controllers {
             TargetWindowType=WindowType.Main;
 
             _userModeAction = new SingleChoiceAction(this, "UserMode", PredefinedCategory.Tools) { Caption = "Identity" };
-            _userModeAction.Items.Add(new ChoiceActionItem(RDC, RDC));
             _userModeAction.Items.Add(new ChoiceActionItem(Current, Current));
 
             _selectionModeAction = new SingleChoiceAction(this, "SelectionMode", PredefinedCategory.Tools) { Caption = "Selection" };
@@ -41,13 +38,9 @@ namespace XpandTestExecutor.Module.Controllers {
 
         }
 
-        public SingleChoiceAction ExecutionModeAction {
-            get { return _executionModeAction; }
-        }
+        public SingleChoiceAction ExecutionModeAction => _executionModeAction;
 
-        public SingleChoiceAction UserModeAction {
-            get { return _userModeAction; }
-        }
+        public SingleChoiceAction UserModeAction => _userModeAction;
 
         private void ExecutionRetriesActionOnExecute(object sender, ParametrizedActionExecuteEventArgs parametrizedActionExecuteEventArgs) {
             ((IModelOptionsTestExecutor)Application.Model.Options).ExecutionRetries = (int)parametrizedActionExecuteEventArgs.ParameterCurrentValue;
@@ -56,8 +49,6 @@ namespace XpandTestExecutor.Module.Controllers {
             base.OnActivated();
             _executionRetriesAction.Value = ((IModelOptionsTestExecutor)Application.Model.Options).ExecutionRetries;
         }
-        public SingleChoiceAction SelectionModeAction {
-            get { return _selectionModeAction; }
-        }
+        public SingleChoiceAction SelectionModeAction => _selectionModeAction;
     }
 }

@@ -1,13 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using DevExpress.EasyTest.Framework;
-using Xpand.Utils.Helpers;
 using XpandTestExecutor.Module.BusinessObjects;
 
 namespace XpandTestExecutor.Module.Services {
@@ -21,22 +20,23 @@ namespace XpandTestExecutor.Module.Services {
             var user = easyTestExecutionInfo.WindowsUser;
             
             var options = easyTestExecutionInfo.EasyTest.Options;
-            foreach (var alias in options.Aliases.Cast<TestAlias>().Where(@alias => alias.ContainsAppPath())) {
+            foreach (var alias in options.Aliases.Cast<TestAlias>().Where(alias => alias.ContainsAppPath())) {
                 var sourcePath = Path.GetFullPath(alias.UpdateAppPath(null,true));
                 if (!unlink&&Directory.Exists(sourcePath)) {
                     var destPath = Path.GetFullPath(alias.UpdateAppPath(user.Name));
-                    Retry.Do(() => { Delete(destPath); }, TimeSpan.FromSeconds(10));
-                    
-                    DirectoryCopy(sourcePath, destPath, true, sourcePath + @"\" + TestRunner.EasyTestUsersDir);
+                    Delete(destPath);
+
+                    DirectoryCopy(sourcePath, destPath, true, sourcePath + @"\" + TestExecutor.EasyTestUsersDir);
                     UpdateAppConfig(easyTestExecutionInfo,  alias,  false);
                 }
             }
             UpdateAdditionalApps(easyTestExecutionInfo, user,unlink);
         }
 
+
         private static void Delete(string destPath){
             if (Directory.Exists(destPath)){
-                Directory.Delete(destPath, true);
+                Directory.Delete(destPath,true);
                 while (Directory.Exists(destPath)) {
                     Thread.Sleep(200);
                 }
@@ -56,6 +56,7 @@ namespace XpandTestExecutor.Module.Services {
             }
         }
 
+        [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         private static void UpdateConnectionStrings(EasyTestExecutionInfo easyTestExecutionInfo, XDocument document,bool unlink) {
             foreach (TestDatabase testDatabase in easyTestExecutionInfo.EasyTest.Options.TestDatabases) {
                 var database = testDatabase.DefaultDBName();
@@ -101,7 +102,7 @@ namespace XpandTestExecutor.Module.Services {
         private static XElement GetAppSettingsElement(XDocument document) {
             Debug.Assert(document.Root != null, "config.Root != null");
             XElement appSettings = document.Root.Element("appSettings") ?? new XElement("AppSettings");
-            var element = appSettings.Descendants().FirstOrDefault(node => node.Attribute("key").Value == "EasyTestCommunicationPort");
+            var element = appSettings.Descendants().FirstOrDefault(node => node.Attribute("key")?.Value == "EasyTestCommunicationPort");
             if (element == null) {
                 element = new XElement("add");
                 element.SetAttributeValue("key", "EasyTestCommunicationPort");

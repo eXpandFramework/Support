@@ -21,7 +21,6 @@ namespace XpandTestExecutor.Module.BusinessObjects {
     [DefaultProperty("Name")]
     public class EasyTest : BaseObject, ISupportSequenceObject {
         private string _application;
-        private EasyTestExecutionInfo _lastEasyTestExecutionInfo;
 
         public EasyTest(Session session)
             : base(session) {
@@ -43,14 +42,14 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         [Obsolete(ObsoleteMessage.DontUseFromCode,true)]
-        public double Duration => GetCurrentSequenceInfos().Duration();
+        public double Duration => GetUISequenceInfos().Duration();
 
         [InvisibleInAllViews]
         [Obsolete(ObsoleteMessage.DontUseFromCode,true)]
-        public XPCollection<EasyTestExecutionInfo> FailedEasyTestExecutionInfos => GetCurrentSequenceInfos().Failed();
+        public XPCollection<EasyTestExecutionInfo> FailedEasyTestExecutionInfos => GetUISequenceInfos().Failed();
 
-
-        public XPCollection<EasyTestExecutionInfo> GetCurrentSequenceInfos() {
+        
+        XPCollection<EasyTestExecutionInfo> GetUISequenceInfos() {
             return new XPCollection<EasyTestExecutionInfo>(Session,
                 EasyTestExecutionInfos.Where(info => info.ExecutionInfo.Sequence == CurrentSequenceOperator.CurrentSequence));
         }
@@ -59,16 +58,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [Obsolete(ObsoleteMessage.DontUseFromCode,true)]
         public bool Failed{
             get {
-                return GetCurrentSequenceInfos().All(info => info.State == EasyTestState.Failed || info.State == EasyTestState.Running);
-            }
-        }
-
-        [InvisibleInAllViews]
-        [Obsolete(ObsoleteMessage.DontUseFromCode,true)]
-        public bool Executed{
-            get{
-                var easyTestExecutionInfos = GetCurrentSequenceInfos();
-                return easyTestExecutionInfos.Count>1|| easyTestExecutionInfos.All(info => info.State == EasyTestState.NotStarted);
+                return GetUISequenceInfos().All(info => info.State == EasyTestState.Failed || info.State == EasyTestState.Running);
             }
         }
 
@@ -76,7 +66,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [Obsolete(ObsoleteMessage.DontUseFromCode,true)]
         public bool Passed{
             get{
-                var easyTestExecutionInfos = GetCurrentSequenceInfos();
+                var easyTestExecutionInfos = GetUISequenceInfos();
                 return easyTestExecutionInfos.Any(info => info.State == EasyTestState.Passed);
             }
         }
@@ -85,7 +75,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [Obsolete(ObsoleteMessage.DontUseFromCode,true)]
         public bool Running{
             get{
-                var easyTestExecutionInfos = GetCurrentSequenceInfos();
+                var easyTestExecutionInfos = GetUISequenceInfos();
                 return easyTestExecutionInfos.Count(info => info.State == EasyTestState.Running) == 1 &&
                        easyTestExecutionInfos.All(info => info.State != EasyTestState.Passed) &&
                        easyTestExecutionInfos.Select(info => info.ExecutionInfo).Distinct()
@@ -113,9 +103,6 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         public string Name => Path.GetFileNameWithoutExtension(FileName);
 
         [InvisibleInAllViews]
-        public EasyTestExecutionInfo LastEasyTestExecutionInfo => _lastEasyTestExecutionInfo ?? GetLastInfo();
-
-        [InvisibleInAllViews]
         public long Sequence { get; set; }
 
         string ISupportSequenceObject.Prefix => null;
@@ -123,33 +110,26 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [Browsable(false)]
         public Options Options => OptionsProvider.Instance[FileName];
 
-        public void CreateExecutionInfo(bool useCustomPort, ExecutionInfo executionInfo, WindowsUser windowsUser = null) {
-            _lastEasyTestExecutionInfo = new EasyTestExecutionInfo(Session) {
+        
+        public EasyTestExecutionInfo CreateExecutionInfo(ExecutionInfo executionInfo, WindowsUser windowsUser){
+            
+            var easyTestExecutionInfo = new EasyTestExecutionInfo(Session) {
                 ExecutionInfo = executionInfo,
                 EasyTest = this,
                 WinPort = 4100,
                 WebPort = 4030,
-                WindowsUser = windowsUser,
+                WindowsUser = windowsUser
             };
-            _lastEasyTestExecutionInfo.CreateApplications(FileName);
-            if (useCustomPort) {
-                IQueryable<EasyTestExecutionInfo> executionInfos =
-                    new XPQuery<EasyTestExecutionInfo>(Session, true).Where(
-                        info => info.ExecutionInfo.Oid == executionInfo.Oid);
-                int winPort = executionInfos.Max(info => info.WinPort);
-                int webPort = executionInfos.Max(info => info.WebPort);
-                _lastEasyTestExecutionInfo.WinPort = winPort + 1;
-                _lastEasyTestExecutionInfo.WebPort = webPort + 1;
-            }
-            EasyTestExecutionInfos.Add(_lastEasyTestExecutionInfo);
-        }
-
-        private EasyTestExecutionInfo GetLastInfo() {
-            if (EasyTestExecutionInfos.Any()) {
-                long max = EasyTestExecutionInfos.Max(info => info.Sequence);
-                return EasyTestExecutionInfos.First(info => info.Sequence == max);
-            }
-            return null;
+            easyTestExecutionInfo.CreateApplications(FileName);
+            
+            var infos = Session.QueryInTransaction<EasyTestExecutionInfo>().Where(info => info.ExecutionInfo.Oid == executionInfo.Oid);
+            int winPort = infos.Max(info => info.WinPort);
+            int webPort = infos.Max(info => info.WebPort);
+            easyTestExecutionInfo.WinPort = winPort + 1;
+            easyTestExecutionInfo.WebPort = webPort + 1;
+            easyTestExecutionInfo.Start=DateTime.Now;
+            Session.ValidateAndCommitChanges();
+            return easyTestExecutionInfo;
         }
 
         protected override void OnSaving() {
@@ -204,5 +184,16 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             }
             
         }
-    }
+
+        public EasyTestExecutionInfo GetLastEasyTestExecutionInfo(ExecutionInfo executionInfo){
+            var easyTestExecutionInfos = EasyTestExecutionInfos.Where(info => info.ExecutionInfo.Oid==executionInfo.Oid).ToArray();
+            if (easyTestExecutionInfos.Any()){
+                var max = easyTestExecutionInfos.Max(info => info.Sequence);
+                return easyTestExecutionInfos.First(info => info.Sequence == max);
+            }
+            return null;
+        }
+
+        
+}
 }
