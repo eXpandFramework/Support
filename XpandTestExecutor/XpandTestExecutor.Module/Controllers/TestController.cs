@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.Actions;
+using DevExpress.ExpressApp.DC;
 using DevExpress.ExpressApp.Model;
 using DevExpress.Persistent.Base;
 using DevExpress.Xpo;
@@ -16,8 +17,16 @@ using XpandTestExecutor.Module.Services;
 
 namespace XpandTestExecutor.Module.Controllers {
     public interface IModelOptionsTestExecutor {
-        [DefaultValue(5)]
         int ExecutionRetries { get; set; }
+    }
+
+    [DomainLogic(typeof(IModelOptionsTestExecutor))]
+    public static class ModelOptionsTestExecutorLogic{
+        public static int Get_ExecutionRetries(IModelOptionsTestExecutor modelOptionsTestExecutor){
+            var environmentVariable = Environment.GetEnvironmentVariable("TestExecutionRetries",
+                EnvironmentVariableTarget.Machine);
+            return environmentVariable != null ? Convert.ToInt32(environmentVariable) : 3;
+        }
     }
     public class TestController : ObjectViewController<ListView, EasyTest>,IModelExtender {
         private const string CancelRun = "Cancel Run";
