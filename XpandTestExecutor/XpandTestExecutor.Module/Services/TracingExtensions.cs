@@ -13,6 +13,7 @@ namespace XpandTestExecutor.Module.Services{
             Tracing.Tracer.LogError(e);
             try{
                 easyTestExecutionInfo.Update(EasyTestState.Failed);
+                easyTestExecutionInfo.EasyTestExecutionInfoSteps.Add(new EasyTestExecutionInfoStep(easyTestExecutionInfo.Session) {StepName = e.ToString(),EasyTestExecutionInfo = easyTestExecutionInfo});
                 easyTestExecutionInfo.Session.ValidateAndCommitChanges();
                 var directoryName = Path.GetDirectoryName(easyTestExecutionInfo.EasyTest.FileName) + "";
                 var logTests = new LogTests();

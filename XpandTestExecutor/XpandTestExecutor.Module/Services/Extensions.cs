@@ -15,11 +15,13 @@ namespace XpandTestExecutor.Module.Services {
     public static class Extensions {
 
         public static void LogValue(this Tracing tracing, EasyTestExecutionInfo easyTestExecutionInfo, string valueName){
-            tracing.LogValue(easyTestExecutionInfo.EasyTest, valueName);
-        }
-
-        public static void LogValue(this Tracing tracing, EasyTest easyTest, string valueName){
-            Tracing.Tracer.LogValue(valueName, easyTest.Name);
+            var easyTestExecutionInfoStep = new EasyTestExecutionInfoStep(easyTestExecutionInfo.Session){
+                StepName = valueName,
+                EasyTestExecutionInfo = easyTestExecutionInfo
+            };
+            easyTestExecutionInfoStep.Session.ValidateAndCommitChanges();
+            easyTestExecutionInfo.EasyTestExecutionInfoSteps.Add(easyTestExecutionInfoStep);
+            tracing.LogValue(easyTestExecutionInfo.ToString(), valueName);
         }
 
         public static void ValidateAndCommitChanges(this Session session) {

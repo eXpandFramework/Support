@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -154,20 +153,11 @@ namespace XpandTestExecutor.Module.Services {
             }
             var windowsUser = easyTestExecutionInfo.WindowsUser;
             UpdateTestFileCore(easyTestExecutionInfo.EasyTest.FileName, windowsUser, options,unlink);
-            foreach (var includedFile in IncludedFiles(easyTestExecutionInfo.EasyTest.FileName)) {
+            foreach (var includedFile in easyTestExecutionInfo.EasyTest.IncludedFiles()) {
                 UpdateTestFileCore(includedFile, windowsUser, options,unlink);
             }
         }
 
-        private static IEnumerable<string> IncludedFiles(string fileName) {
-            var allText = File.ReadAllText(fileName);
-            var regexObj = new Regex("#IncludeFile (.*)inc", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-            Match matchResult = regexObj.Match(allText);
-            while (matchResult.Success) {
-                yield return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(fileName) + "", matchResult.Groups[1].Value + "inc"));
-                matchResult = matchResult.NextMatch();
-            }
-        }
 
         private static void UpdateAppBinAlias(EasyTestExecutionInfo easyTestExecutionInfo) {
             foreach (var alias in easyTestExecutionInfo.EasyTest.Options.Aliases.Cast<TestAlias>().Where(alias => alias.ContainsAppPath())) {

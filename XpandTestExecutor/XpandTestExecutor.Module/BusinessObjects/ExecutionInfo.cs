@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Principal;
-using Cassia;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Xpo;
@@ -77,16 +74,11 @@ namespace XpandTestExecutor.Module.BusinessObjects {
 
         public XPCollection<EasyTest> TestsToExecute{
             get{
-//                ReloadLastInfoState();
                 var runningTests = RunningTests.ToArray();
                 var failedTests = FailedTests.ToArray();
                 var passedEasyTests = PassedEasyTests.ToArray();
                 var testsToExecute = EasyTests.Except(runningTests.Concat(failedTests).Concat(passedEasyTests))
-                    .OrderByDescending(test => test.EasyTestExecutionInfos.Count(info => info.ExecutionInfo.Oid == Oid));
-//                    .Take(AvailableUsers.Count);
-//                var count = testsToExecute.Count();
-//                if (LoggedInUsers.Count()>3&&count>0)
-//                    Debug.Print("");
+                    .OrderBy(test => test.EasyTestExecutionInfos.Count(info => info.ExecutionInfo.Oid == Oid));
                 return new XPCollection<EasyTest>(Session, testsToExecute);
             }
         }
@@ -127,7 +119,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             var lastEasyTestExecutionInfo = infos.First(info => info.Sequence==maxSequence);
             var isRunning = lastEasyTestExecutionInfo.State==EasyTestState.Running;
             var passed = infos.Any(info => info.State==EasyTestState.Passed);
-            return !isRunning&&(!passed && infos.Count() >= Retries);
+            return !isRunning&&(!passed && infos.Count() > Retries);
         }
 
         protected override void OnSaving() {

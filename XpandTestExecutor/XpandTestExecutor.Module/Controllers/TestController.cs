@@ -25,7 +25,7 @@ namespace XpandTestExecutor.Module.Controllers {
         public static int Get_ExecutionRetries(IModelOptionsTestExecutor modelOptionsTestExecutor){
             var environmentVariable = Environment.GetEnvironmentVariable("TestExecutionRetries",
                 EnvironmentVariableTarget.Machine);
-            return environmentVariable != null ? Convert.ToInt32(environmentVariable) : 3;
+            return environmentVariable != null ? Convert.ToInt32(environmentVariable) : 5;
         }
     }
     public class TestController : ObjectViewController<ListView, EasyTest>,IModelExtender {

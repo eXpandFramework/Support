@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using DevExpress.EasyTest.Framework;
+using DevExpress.ExpressApp.ConditionalAppearance;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.BaseImpl;
 using DevExpress.Persistent.Validation;
@@ -14,8 +15,41 @@ using Xpand.Persistent.Base.General;
 using Xpand.Persistent.Base.General.CustomAttributes;
 
 namespace XpandTestExecutor.Module.BusinessObjects {
+    public class EasyTestExecutionInfoStep:BaseObject{
+        public EasyTestExecutionInfoStep(Session session) : base(session){
+        }
+
+        EasyTestExecutionInfo _easyTestExecutionInfo;
+        string _stepName;
+        protected override void OnSaving(){
+            base.OnSaving();
+            Time=DateTime.Now;
+        }
+
+        DateTime _time;
+        [DisplayFormat("{0:HH:mm}")]
+        public DateTime Time{
+            get { return _time; }
+            set { SetPropertyValue(nameof(Time), ref _time, value); }
+        }
+        [RuleRequiredField]
+        [Size(SizeAttribute.Unlimited)]
+        public string StepName{
+            get { return _stepName; }
+            set { SetPropertyValue(nameof(StepName), ref _stepName, value); }
+        }
+        [Association("EasyTestExecutionInfo-EasyTestExecutionInfoSteps")]
+        [RuleRequiredField]
+        public EasyTestExecutionInfo EasyTestExecutionInfo{
+            get { return _easyTestExecutionInfo; }
+            set { SetPropertyValue(nameof(EasyTestExecutionInfo), ref _easyTestExecutionInfo, value); }
+        }
+
+        
+    }
     [DefaultClassOptions]
     [DefaultProperty("Sequence")]
+    [Appearance("StepsRule", "[EasyTestExecutionInfoSteps][].Count() <> 9",FontColor = "Red",TargetItems = "*")]
     public class EasyTestExecutionInfo : BaseObject, ISupportSequenceObject {
         private WindowsUser _windowsUser;
         private EasyTest _easyTest;
@@ -24,8 +58,9 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         private EasyTestState _state;
         private int _webPort;
         private int _winPort;
-       
 
+        [Association("EasyTestExecutionInfo-EasyTestExecutionInfoSteps")]
+        public XPCollection<EasyTestExecutionInfoStep> EasyTestExecutionInfoSteps => GetCollection<EasyTestExecutionInfoStep>(nameof(EasyTestExecutionInfoSteps));
         public EasyTestExecutionInfo(Session session)
             : base(session) {
         }
@@ -36,7 +71,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         public override string ToString(){
-            return State.ToString();
+            return EasyTest+" "+ State + " in "+ExecutionInfo;
         }
 
         [Size(SizeAttribute.Unlimited), Delayed]
@@ -136,8 +171,12 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         string ISupportSequenceObject.Prefix => ((ISupportSequenceObject)EasyTest).Sequence.ToString(CultureInfo.InvariantCulture);
 
         [Browsable(false)]
-        public bool IsTimeouted => Start != DateTime.MinValue &&
-                                   (DateTime.Now - Start).TotalMinutes + 1 > EasyTest.Options.DefaultTimeout;
+        public bool IsTimeouted => CalcTimeout(End==DateTime.MinValue ? DateTime.Now : End);
+
+        private bool CalcTimeout(DateTime dateTime){
+            return Start != DateTime.MinValue &&
+                   (dateTime - Start).TotalMinutes + 1 > EasyTest.Options.DefaultTimeout;
+        }
 
         public void SetView(bool win, Image view) {
             if (win)

@@ -10,9 +10,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>XpandTestExecutor.Module.Win</RootNamespace>
     <AssemblyName>XpandTestExecutor.Module.Win</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileUpgradeFlags></FileUpgradeFlags>
-    <UpgradeBackupLocation></UpgradeBackupLocation>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>

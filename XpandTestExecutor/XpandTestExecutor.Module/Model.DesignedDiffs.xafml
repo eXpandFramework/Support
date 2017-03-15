@@ -146,12 +146,19 @@
               </TabbedGroup>
             </LayoutGroup>
             <LayoutGroup Id="WinOther" ShowCaption="True" CaptionLocation="Top" Direction="Vertical" Index="3" RelativeSize="100" Caption="Other" IsNewNode="True">
-              <LayoutGroup Id="Auto4e0f28bb-c982-46ae-b721-5b6314c9b7f4" ShowCaption="False" Caption="Auto4e0f28bb-c982-46ae-b721-5b6314c9b7f4(19)" Direction="Horizontal" Index="0" RelativeSize="5.352112676056338" IsNewNode="True">
-                <LayoutItem Id="WinPort" ViewItem="WinPort" SizeConstraintsType="Default" Index="0" RelativeSize="49.8371335504886" IsNewNode="True" />
-                <LayoutItem Id="WebPort" ViewItem="WebPort" SizeConstraintsType="Default" Index="1" RelativeSize="50.1628664495114" IsNewNode="True" />
+              <LayoutGroup Id="Auto4e0f28bb-c982-46ae-b721-5b6314c9b7f4" ShowCaption="False" Caption="Auto4e0f28bb-c982-46ae-b721-5b6314c9b7f4(19)" Direction="Horizontal" Index="0" RelativeSize="4.2696629213483144" IsNewNode="True">
+                <LayoutItem Id="WinPort" ViewItem="WinPort" SizeConstraintsType="Default" Index="0" RelativeSize="49.77827050997783" IsNewNode="True" />
+                <LayoutItem Id="WebPort" ViewItem="WebPort" SizeConstraintsType="Default" Index="1" RelativeSize="50.22172949002217" IsNewNode="True" />
               </LayoutGroup>
-              <LayoutItem Id="EasyTestApplications" ViewItem="EasyTestApplications" SizeConstraintsType="Custom" Index="1" RelativeSize="11.830985915492958" CaptionLocation="Top" MinSize="20, 84" MaxSize="0, 84" IsNewNode="True" />
-              <LayoutItem Id="ConcurrentInfos" ViewItem="ConcurrentInfos" CaptionLocation="Top" SizeConstraintsType="Default" Index="2" RelativeSize="82.8169014084507" IsNewNode="True" />
+              <LayoutItem Id="EasyTestApplications" ViewItem="EasyTestApplications" SizeConstraintsType="Custom" Index="1" RelativeSize="9.4382022471910112" CaptionLocation="Top" MinSize="20, 84" MaxSize="0, 84" ShowCaption="False" IsNewNode="True" />
+              <TabbedGroup Id="Item10" CaptionLocation="Top" Index="2" RelativeSize="86.292134831460672" IsNewNode="True">
+                <LayoutGroup Id="Item9" ShowCaption="True" CaptionLocation="Top" Index="0" RelativeSize="100" Caption="ConcurrentInfos" IsNewNode="True">
+                  <LayoutItem Id="ConcurrentInfos" ShowCaption="False" ViewItem="ConcurrentInfos" CaptionLocation="Top" Index="0" RelativeSize="100" IsNewNode="True" />
+                </LayoutGroup>
+                <LayoutGroup Id="Item11" ShowCaption="True" CaptionLocation="Top" Direction="Vertical" Index="1" Caption="Steps" RelativeSize="100" IsNewNode="True">
+                  <LayoutItem Id="EasyTestExecutionInfoSteps" ViewItem="EasyTestExecutionInfoSteps" Index="0" RelativeSize="100" IsNewNode="True" />
+                </LayoutGroup>
+              </TabbedGroup>
             </LayoutGroup>
           </TabbedGroup>
           <LayoutGroup Id="SimpleEditors" RelativeSize="86.58536585365853" Direction="Horizontal" Removed="True">

@@ -1,7 +1,6 @@
 using System;
 using System.Configuration;
 using System.Diagnostics;
-using System.Threading;
 using System.Windows.Forms;
 using DevExpress.ExpressApp.Security;
 using XpandTestExecutor.Module.Controllers;
@@ -14,15 +13,13 @@ namespace XpandTestExecutor.Win {
         /// </summary>
         [STAThread]
         static void Main(string[] args){
-            AppDomain.CurrentDomain.UnhandledException +=
-   new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-            Application.ThreadException +=
-   new ThreadExceptionEventHandler(Application_ThreadException);
+            
 
 
 #if EASYTEST
             DevExpress.ExpressApp.Win.EasyTest.EasyTestRemotingRegistration.Register();
 #endif
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             EditModelPermission.AlwaysGranted = Debugger.IsAttached;
@@ -38,8 +35,9 @@ namespace XpandTestExecutor.Win {
             }
 #endif
             try {
+                
                 winApplication.Setup();
-                args=new string[]{"easytests.txt"};
+//                args=new string[]{"easytests.txt"};
                 if (args.Length > 0){
                     winApplication.CreateObjectSpace();
                     TestExecutor.Execute(args[0], ((IModelOptionsTestExecutor) winApplication.Model.Options).ExecutionRetries);
@@ -52,13 +50,6 @@ namespace XpandTestExecutor.Win {
             }
         }
 
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e){
-            
-        }
 
-        private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e){
-            
-
-        }
     }
 }

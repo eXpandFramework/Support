@@ -3,174 +3,170 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using DevExpress.EasyTest.Framework;
 using DevExpress.ExpressApp.Xpo;
 using DevExpress.Persistent.Base;
 using DevExpress.Xpo;
 using Xpand.Persistent.Base.General;
 using XpandTestExecutor.Module.BusinessObjects;
-using Task = System.Threading.Tasks.Task;
 
 namespace XpandTestExecutor.Module.Services{
     struct TestData{
         public IDataLayer DataLayer;
         public bool DebugMode;
         public Guid EasyTestExecutionInfoKey { get; set; }
+        public string UserName { get;  set; }
     }
+
     public class TestExecutor{
         public const string EasyTestUsersDir = "EasyTestUsers";
-        
+
         private CancellationToken _cancellationToken;
-        private readonly object _locker=new object();
+        private List<Task> _tasks;
 
         private TestExecutor(CancellationToken cancellationToken){
             _cancellationToken = cancellationToken;
         }
 
         void Execute(string[] easyTestFiles, bool debugMode, int retries){
-            retries = 0;
-            ExecutionInfo executionInfo;
-            using (var xpObjectSpaceProvider = new XPObjectSpaceProvider(new ConnectionStringDataStoreProvider(ApplicationHelper.Instance.Application.ConnectionString), true)){
-                easyTestFiles = easyTestFiles.ToArray();
+            easyTestFiles = easyTestFiles.Take(easyTestFiles.Length).ToArray();
+            using (var xpObjectSpaceProvider =new XPObjectSpaceProvider(new ConnectionStringDataStoreProvider(ApplicationHelper.Instance.Application.ConnectionString),true)){
                 using (var dataLayer = xpObjectSpaceProvider.CreateObjectSpace().Session().DataLayer){
-                    int finishedTestsCount;
-                    int windowsUsersCount;
                     using (var unitOfWork = new UnitOfWork(dataLayer)){
                         var easyTests = unitOfWork.Query<EasyTest>().Where(test => easyTestFiles.Contains(test.FileName)).ToArray();
-                        executionInfo = ExecutionInfo.Create(unitOfWork, true, retries);
-                        windowsUsersCount = executionInfo.WindowsUsers.Count;
+                        var executionInfo = ExecutionInfo.Create(unitOfWork, true, retries);
                         TestEnviroment.Setup(easyTests, executionInfo);
-                        finishedTestsCount = executionInfo.FinishedTests.Count;
-                    }
-                    
-                    while (finishedTestsCount != easyTestFiles.Length&&_runningUsers.Count<windowsUsersCount){
-                        finishedTestsCount = RunTests(debugMode, executionInfo.Oid, dataLayer, easyTestFiles);
-                        Thread.Sleep(5000);
-                        _cancellationToken.ThrowIfCancellationRequested();
+                        RunTests(debugMode, executionInfo.Oid, dataLayer, easyTestFiles);
+                        Tracing.Tracer.LogText($"Execution {executionInfo.Sequence} Finished");
                     }
                 }
             }
-            Tracing.Tracer.LogText($"Execution {executionInfo.Sequence} Finished");
         }
-        static readonly Dictionary<string, EasyTest> _runningUsers=new Dictionary<string, EasyTest>();
 
-        private int RunTests(bool debugMode, Guid executionInfoKey, IDataLayer dataLayer, string[] easyTests){
+        private void RunTests(bool debugMode, Guid executionInfoKey, IDataLayer dataLayer, string[] easyTestFiles){
+            var runningUsers = new List<string>();
+            _tasks = CreateTasks(debugMode, executionInfoKey, dataLayer, easyTestFiles, runningUsers);
+            while (_tasks.Count > 0){
+                var i = Task.WaitAny(_tasks.ToArray());
+                var task = (Task<TestData>)_tasks[i];
+                if (task.Exception != null)
+                    throw task.Exception;
+                runningUsers.Remove(task.Result.UserName);
+                _tasks.Remove(task);
+                
+                _tasks.AddRange(CreateTasks(debugMode, executionInfoKey, dataLayer, easyTestFiles, runningUsers));
+
+            }
+        }
+
+        private List<Task> CreateTasks(bool debugMode, Guid executionInfoKey, IDataLayer dataLayer, string[] easyTestFiles,
+            List<string> runningUsers){
+            var tasks = new List<Task>();
             using (var unitOfWork = new UnitOfWork(dataLayer)){
-                var executionInfo = unitOfWork.GetObjectByKey<ExecutionInfo>(executionInfoKey,true);
-                executionInfo.SetEasyTests(easyTests);
-                var tests = executionInfo.TestsToExecute.Take(executionInfo.WindowsUsers.Count- _runningUsers.Count).ToArray();
+                var executionInfo = unitOfWork.GetObjectByKey<ExecutionInfo>(executionInfoKey, true);
+                executionInfo.SetEasyTests(easyTestFiles);
+                var tests = executionInfo.TestsToExecute.Take(executionInfo.WindowsUsers.Count - runningUsers.Count).ToArray();
+
                 foreach (var easyTest in tests){
-                    Guid easyTestExecutionInfoKey;
-                    lock (_locker){
-                        executionInfo.Reload();
-                        executionInfo.EasyTestExecutionInfos.Reload();
-                        var windowsUser = GetNextWindowsUser(easyTest, executionInfo);
-                        var easyTestExecutionInfo = easyTest.CreateExecutionInfo(executionInfo,windowsUser);
-                        
-                        easyTest.EasyTestExecutionInfos.Reload();
-                        executionInfo.EasyTestExecutionInfos.Reload();
-                        easyTestExecutionInfoKey = easyTestExecutionInfo.Oid;
-                        _runningUsers.Add(easyTestExecutionInfo.WindowsUser.Name,null);
-                    }
-                    
-                    StartTask(debugMode, easyTestExecutionInfoKey, dataLayer).ContinueWith(task =>{
-                        lock (_locker){
-                            using (var uow = new UnitOfWork(dataLayer)){
-                                var easyTestExecutionInfo = uow.GetObjectByKey<EasyTestExecutionInfo>(easyTestExecutionInfoKey);
-                                Tracing.Tracer.LogValue(easyTestExecutionInfo.EasyTest,
-                                "LogOffUser " + easyTestExecutionInfo.WindowsUser.Name);
-                                EnviromentExEx.LogOffUser(easyTestExecutionInfo.WindowsUser.Name);
-                                easyTestExecutionInfo.Unlink();
-                                UpdateState(easyTestExecutionInfo);
-                                _runningUsers.Remove(easyTestExecutionInfo.WindowsUser.Name);
-                            }
-                        }
-                    }, _cancellationToken);
-                    TraceExecutionInfo(easyTests, executionInfo);
+                    var windowsUser = GetNextWindowsUser(easyTest, executionInfo, runningUsers);
+                    var easyTestExecutionInfo = easyTest.CreateExecutionInfo(executionInfo, windowsUser);
+                    var task = CreateTask(debugMode, easyTestExecutionInfo.Oid, dataLayer);
+                    tasks.Add(task);
                 }
-                var finishedTestsCount = executionInfo.FinishedTests.Count;
                 executionInfo.SetEasyTests(new string[0]);
-                return finishedTestsCount;
+            }
+            return tasks;
+        }
+
+        private void AfterTestRun(EasyTestExecutionInfo easyTestExecutionInfo){
+            UpdateState(easyTestExecutionInfo);
+            Tracing.Tracer.LogValue(easyTestExecutionInfo,"LogOffUser " + easyTestExecutionInfo.WindowsUser.Name);
+            EnviromentExEx.LogOffUser(easyTestExecutionInfo.WindowsUser.Name);
+            Thread.Sleep(20000);
+            try{
+                easyTestExecutionInfo.Unlink();
+            }
+            catch {
             }
         }
 
-        private static WindowsUser GetNextWindowsUser(EasyTest easyTest, ExecutionInfo executionInfo){
-            var lastWindowsUser = easyTest.GetLastEasyTestExecutionInfo(executionInfo)?.WindowsUser;
-            var availableUsers = executionInfo.AvailableUsers.
-                OrderByDescending(user => lastWindowsUser != null && user.Oid != lastWindowsUser.Oid).
-                ThenByDescending(user =>executionInfo.EasyTestExecutionInfos.Count(info => info.WindowsUser.Oid == user.Oid && info.EasyTest.Oid == easyTest.Oid));
-
-            var windowsUser = availableUsers.First(user => !_runningUsers.ContainsKey(user.Name));
-            return windowsUser;
+        private WindowsUser GetNextWindowsUser(EasyTest easyTest, ExecutionInfo executionInfo, List<string> runningUsers){
+            var usedUsers = executionInfo.EasyTestExecutionInfos.Where(info => info.EasyTest.Oid==easyTest.Oid).Select(info => info.WindowsUser);
+            var availableUser = executionInfo.WindowsUsers.Where(user => !runningUsers.Contains(user.Name)).OrderBy(user => usedUsers.Count(windowsUser => user.Oid==windowsUser.Oid)).First();
+            runningUsers.Add(availableUser.Name);
+            return availableUser;
         }
 
-
-        private Task StartTask(bool debugMode, Guid easyTestExecutionInfoKey, IDataLayer dataLayer){
-            return Task.Factory.StartNew(() =>{
-                var testData = new TestData{
-                    EasyTestExecutionInfoKey = easyTestExecutionInfoKey,
-                    DataLayer = dataLayer,
-                    DebugMode = debugMode
-                };
-                RunTest(testData);
-            }, _cancellationToken);
+        private Task<TestData> CreateTask(bool debugMode, Guid easyTestExecutionInfoKey, IDataLayer dataLayer){
+            var testData = new TestData{
+                EasyTestExecutionInfoKey = easyTestExecutionInfoKey,
+                DataLayer = dataLayer,
+                DebugMode = debugMode
+            };
+            var task = new Task<TestData>(o => RunTest((TestData) o), testData, _cancellationToken);
+            task.Start();
+            return task;
         }
 
-        private void RunTest(TestData testData){
+        private TestData RunTest(TestData testData){
             _cancellationToken.ThrowIfCancellationRequested();
             Tracing.Tracer.LogText(nameof(RunTest));
             using (var unitOfWork = new UnitOfWork(testData.DataLayer)){
-                var easyTestExecutionInfo = unitOfWork.GetObjectByKey<EasyTestExecutionInfo>(testData.EasyTestExecutionInfoKey);
-                var easyTest = easyTestExecutionInfo.EasyTest;
-                var executionInfo = easyTestExecutionInfo.ExecutionInfo;
-                Tracing.Tracer.LogValue(easyTest, "RunTest");
-                var lastEasyTestExecutionInfo = easyTest.GetLastEasyTestExecutionInfo(executionInfo);
-                using (var process = new CustomProcess(lastEasyTestExecutionInfo, testData.DebugMode)){
+                var easyTestExecutionInfo =unitOfWork.GetObjectByKey<EasyTestExecutionInfo>(testData.EasyTestExecutionInfoKey);
+                testData.UserName = easyTestExecutionInfo.WindowsUser.Name;
+                Tracing.Tracer.LogValue(easyTestExecutionInfo, "RunTest");
+                using (var process = new CustomProcess(easyTestExecutionInfo, testData.DebugMode)){
                     try{
-                        lastEasyTestExecutionInfo.Setup();
-                        var timeout = lastEasyTestExecutionInfo.EasyTest.Options.DefaultTimeout*1000*60;
+                        easyTestExecutionInfo.Setup();
+                        var timeout = easyTestExecutionInfo.EasyTest.Options.DefaultTimeout * 1000 * 60;
                         process.Start(timeout);
-                        process.WaitForExit(timeout);
                     }
                     catch (Exception e){
-                        Tracing.Tracer.LogErrors(e, lastEasyTestExecutionInfo);
-                        throw;
+                        Tracing.Tracer.LogErrors(e, easyTestExecutionInfo);
                     }
-                    finally{
-                        process.CloseRDClient();
-                    }
+                    process.CloseRDClient();
                 }
+
+
+                AfterTestRun(easyTestExecutionInfo);
+
+                TraceExecutionInfo(easyTestExecutionInfo.ExecutionInfo);
+
+                Tracing.Tracer.LogValue(easyTestExecutionInfo,  "runtest out");
             }
+            
+            return testData;
         }
 
         private void UpdateState(EasyTestExecutionInfo easyTestExecutionInfo){
             try{
-                var easyTestName = easyTestExecutionInfo.EasyTest.Name + "/" + easyTestExecutionInfo.EasyTest.Application + "/" + easyTestExecutionInfo.WindowsUser;
-
                 var easyTest = easyTestExecutionInfo.EasyTest;
                 var directoryName = Path.GetDirectoryName(easyTest.FileName) + "";
                 CopyXafLogs(directoryName);
                 var logTests = easyTest.GetLogTests();
                 var state = EasyTestState.Passed;
-                if (!logTests.Any() || logTests.Any(test => test.Result != "Passed"))
+                if (!logTests.Any())
                     state = EasyTestState.Failed;
-                Tracing.Tracer.LogValue(easyTest, "Update State=" + state);
+                else{
+                    if (logTests.Where(test => test.Result!="Ignored").Any(test => test.Result!=EasyTestState.Passed.ToString()))
+                        state=EasyTestState.Failed;
+                }
+                Tracing.Tracer.LogValue(easyTestExecutionInfo, "Update State=" + state);
                 easyTestExecutionInfo.Update(state);
                 easyTest.Session.ValidateAndCommitChanges();
                 easyTest.IgnoreApplications(logTests, easyTestExecutionInfo.WindowsUser.Name);
 
-                Tracing.Tracer.LogText(easyTestName + "AfterTestRun Out");
+                Tracing.Tracer.LogValue(easyTestExecutionInfo,  "AfterTestRun Out");
             }
             catch (Exception e){
                 Tracing.Tracer.LogErrors(e, easyTestExecutionInfo);
-                throw;
             }
         }
 
-        private static void TraceExecutionInfo(string[] easyTests, ExecutionInfo executionInfo){
+        private static void TraceExecutionInfo( ExecutionInfo executionInfo){
             Tracing.Tracer.LogValue("executionInfo.AvailableUsers", executionInfo.AvailableUsers.Count);
             Tracing.Tracer.LogValue("executionInfo.EasyTests", executionInfo.EasyTests.Count);
-            Tracing.Tracer.LogValue("easyTests", easyTests.Length);
             Tracing.Tracer.LogValue("executionInfo.FinishedTests", executionInfo.FinishedTests.Count);
             Tracing.Tracer.LogValue("executionInfo.RunningTests", executionInfo.RunningTests.Count);
         }

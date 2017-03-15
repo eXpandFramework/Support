@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -24,6 +26,18 @@ namespace XpandTestExecutor.Module.BusinessObjects {
 
         public EasyTest(Session session)
             : base(session) {
+        }
+
+        public IEnumerable<string> IncludedFiles(){
+            var allText = File.ReadAllText(FileName);
+            var regexObj = new Regex("#IncludeFile (.*)inc", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var matchResult = regexObj.Match(allText);
+            while (matchResult.Success){
+                yield return
+                    Path.GetFullPath(Path.Combine(Path.GetDirectoryName(FileName) + "",
+                        matchResult.Groups[1].Value + "inc"));
+                matchResult = matchResult.NextMatch();
+            }
         }
 
         public LogTest[] GetLogTests() {

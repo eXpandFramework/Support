@@ -2,11 +2,14 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Xpand.Utils.Helpers;
 using XpandTestExecutor.Module.BusinessObjects;
 
 namespace XpandTestExecutor.Module.Services {
     public static class TestEnviroment {
+        private static readonly object _locker=new object();
+
         public static void KillRDClient() {
             var processes = Process.GetProcesses().Where(process => process.ProcessName.Contains("RDClient")).ToArray();
             foreach (var process in processes) {
@@ -23,10 +26,12 @@ namespace XpandTestExecutor.Module.Services {
         }
 
         public static void Setup(this EasyTestExecutionInfo info){
-            Setup(info,false);
-            var path = Path.Combine(Path.GetDirectoryName(info.EasyTest.FileName)+"","testslog.xml");
-            if (File.Exists(path))
-                File.Delete(path);
+            lock (_locker){
+                Setup(info,false);
+                var path = Path.Combine(Path.GetDirectoryName(info.EasyTest.FileName)+"","testslog.xml");
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
 
         }
 
@@ -56,6 +61,18 @@ namespace XpandTestExecutor.Module.Services {
             foreach (var directory in directories){
                 Directory.Delete(directory,true);
             }
+
+            
+            foreach (var easyTest in easyTests){
+                foreach (var includedFile in easyTest.IncludedFiles()){
+                    var test = File.ReadAllText(easyTest.FileName);
+                    var newFile = Path.Combine(Path.GetDirectoryName(includedFile)+"",Guid.NewGuid()+".inc");
+                    File.Copy(includedFile,newFile);
+                    var newTest = Regex.Replace(test,Path.GetFileName(includedFile),Path.GetFileName(newFile),RegexOptions.IgnoreCase);
+                    File.WriteAllText(easyTest.FileName,newTest);
+                }
+            }
+            
         }
 
         public static void Terminate(){

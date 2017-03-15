@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
-using Cassia;
 using Xpand.Utils.Helpers;
 
 namespace XpandTestExecutor.Module.Services{
@@ -14,15 +11,6 @@ namespace XpandTestExecutor.Module.Services{
 //            }
         }
 
-        public static bool IsLoggedIn(string userName){
-            ITerminalServicesManager manager = new TerminalServicesManager();
-            bool isLoggedIn;
-            using (var server = manager.GetRemoteServer(Environment.MachineName)){
-                server.Open();
-                isLoggedIn = server.GetSessions().Any(session => session.UserName == userName);
-            }
-            return isLoggedIn;
-        }
 
     }
 }

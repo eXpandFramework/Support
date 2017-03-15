@@ -19,25 +19,22 @@ namespace XpandTestExecutor.Module.Services{
         }
 
         public void Start( int timeout){
-            Tracing.Tracer.LogValue(_easyTestExecutionInfo.EasyTest, "StartServerStream");
+            Tracing.Tracer.LogValue(_easyTestExecutionInfo, "StartServerStream");
             var pipeName = Guid.NewGuid().ToString();
             _serverStream = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1);
             StartClient(timeout, pipeName);
-            Tracing.Tracer.LogValue(_easyTestExecutionInfo.EasyTest, "WaitForConnection");
-            Task.Factory.StartNew(() => _serverStream.WaitForConnection()).Wait(10000);
-            Tracing.Tracer.LogValue(_easyTestExecutionInfo.EasyTest, "GetSessionId");
-            var sessionId = GetSessionId();
+            Tracing.Tracer.LogValue(_easyTestExecutionInfo, "WaitForConnection");
+            int sessionId = 0;
+            Task.Factory.StartNew(() => {
+                _serverStream.WaitForConnection();
+                Tracing.Tracer.LogValue(_easyTestExecutionInfo, "GetSessionId");
+                sessionId = GetSessionId();
+            }).Wait(10000);
+            
+            Tracing.Tracer.LogValue(_easyTestExecutionInfo, "CreateStartInfo");
             StartInfo = CreateStartInfo(sessionId);
             Start();
-        }
-
-        protected override void Dispose(bool disposing){
-            base.Dispose(disposing);
-            if (_serverStream != null){
-                if (_serverStream.IsConnected)
-                    _serverStream.Disconnect();
-                _serverStream.Close();
-            }
+            WaitForExit(timeout);
         }
 
         private void StartClient(int timeout, string pipeName){
@@ -59,17 +56,30 @@ namespace XpandTestExecutor.Module.Services{
         }
 
         public void CloseRDClient(){
-            Task.Factory.StartNew(() =>{
-                if (_serverStream != null){
-                    var streamString = new StreamString(_serverStream);
-                    streamString.WriteString(true.ToString());
-                    _serverStream.WaitForPipeDrain();
-                    _serverStream.Disconnect();
-                    _serverStream.Close();
-                }
-            }).Wait(5000);
+            try{
+                Task.Factory.StartNew(CloseClient).Wait(5000);
+            }
+            catch {
+            }
+            try{
+                _serverStream?.Disconnect();
+            }
+            catch {
+            }
+            try{
+                _serverStream?.Close();
+            }
+            catch {
+            }
         }
 
+        private void CloseClient(){
+            if (_serverStream != null){
+                var streamString = new StreamString(_serverStream);
+                streamString.WriteString(true.ToString());
+                _serverStream.WaitForPipeDrain();
+            }
+        }
 
         private ProcessStartInfo CreateStartInfo(int sessionId=0){
             var workingDirectory = Path.GetDirectoryName(_easyTestExecutionInfo.EasyTest.FileName) + "";
@@ -77,7 +87,8 @@ namespace XpandTestExecutor.Module.Services{
             var testExecutor = $"TestExecutor.v{AssemblyInfo.VersionShort}.exe";
             var debugModeArgs = _debugMode ? @""" -d:""" : null;
             var testExecutorArgs =@""""+Path.Combine(workingDirectory,_easyTestExecutionInfo.EasyTest.FileName)+@"""";
-            var arguments =$"/accepteula -u {WindowsUser.Domain}\\{_easyTestExecutionInfo.WindowsUser.Name} -p {_easyTestExecutionInfo.WindowsUser.Password} -w {@"""" + workingDirectory + @""""} -h -i {sessionId} {@"""" + Path.Combine(workingDirectory, executorWrapper) + @""" " + testExecutor + " " + testExecutorArgs + debugModeArgs}";
+            var arguments =
+                $"/accepteula -u {WindowsUser.Domain}\\{_easyTestExecutionInfo.WindowsUser.Name} -p {_easyTestExecutionInfo.WindowsUser.Password} -w {@"""" + workingDirectory + @""""} -h -i {sessionId} {@"""" + Path.Combine(workingDirectory, executorWrapper) + @""" " + testExecutor + " " + testExecutorArgs + debugModeArgs}";
             return new ProcessStartInfo {
                 WorkingDirectory = workingDirectory,
                 FileName = "psexec",
@@ -104,7 +115,7 @@ namespace XpandTestExecutor.Module.Services{
 
                 return _streamEncoding.GetString(inBuffer);
             }
-
+            
             public int WriteString(string outString){
                 var outBuffer = _streamEncoding.GetBytes(outString);
                 var len = outBuffer.Length;
