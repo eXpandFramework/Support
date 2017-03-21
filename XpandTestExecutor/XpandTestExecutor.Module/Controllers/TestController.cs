@@ -90,7 +90,6 @@ namespace XpandTestExecutor.Module.Controllers {
             }
             else if (ReferenceEquals(SelectionModeAction.SelectedItem.Data, TestControllerHelper.Selected)){
                 _runTestAction.Caption = CancelRun;
-                _unlinkTestAction.DoExecute();
                 _cancellationTokenSource=new CancellationTokenSource();
                 var easyTestFiles = e.SelectedObjects.Cast<EasyTest>().Select(test => test.FileName).ToArray();
                 Task.Factory.StartNew(() => TestExecutor.Execute(easyTestFiles, IsDebug, _cancellationTokenSource.Token,
@@ -99,7 +98,7 @@ namespace XpandTestExecutor.Module.Controllers {
                         task =>{
                             _runTestAction.Caption = Run;
                             _runTestAction.Enabled[CancelRun] = true;
-                        });
+                        },TaskScheduler.FromCurrentSynchronizationContext());
             }
             else{
                 throw new NotImplementedException();

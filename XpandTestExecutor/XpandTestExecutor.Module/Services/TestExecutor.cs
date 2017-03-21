@@ -48,15 +48,14 @@ namespace XpandTestExecutor.Module.Services{
             var runningUsers = new List<string>();
             _tasks = CreateTasks(debugMode, executionInfoKey, dataLayer, easyTestFiles, runningUsers);
             while (_tasks.Count > 0){
+                _cancellationToken.ThrowIfCancellationRequested();
                 var i = Task.WaitAny(_tasks.ToArray());
                 var task = (Task<TestData>)_tasks[i];
                 if (task.Exception != null)
                     throw task.Exception;
                 runningUsers.Remove(task.Result.UserName);
                 _tasks.Remove(task);
-                
                 _tasks.AddRange(CreateTasks(debugMode, executionInfoKey, dataLayer, easyTestFiles, runningUsers));
-
             }
         }
 
