@@ -13,9 +13,8 @@ using Microsoft.Win32;
 namespace Xpand.ToolboxCreator {
     class Program{
         private const string Toolboxcreatorlog = "toolboxcreator.log";
-        private static readonly int[] _vsVersions = {10, 11, 12, 14};
+        private static readonly int[] _vsVersions = {10, 11, 12, 14,16};
         static void Main(string[] args) {
-            
             var isWow64 = InternalCheckIsWow64();
             string wow = isWow64 ? @"Wow6432Node\" : null;
             var registryKeys = RegistryKeys(wow);
@@ -25,9 +24,11 @@ namespace Xpand.ToolboxCreator {
                 var assemblyFolderExKey = GetAssemblyFolderExKey(wow);
                 assemblyFolderExKey.DeleteSubKeyTree("Xpand", false);
                 assemblyFolderExKey.Close();
+                InstallPackage(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""");
                 Console.WriteLine("Unistalled");
                 return;
             }
+            InstallPackage("Xpand.VSIX.vsix");
             CreateAssemblyFoldersKey(wow);
             Trace.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(Toolboxcreatorlog){Name = "FileLog"});
@@ -39,12 +40,12 @@ namespace Xpand.ToolboxCreator {
             foreach (var file in files) {
                 try {
                     var assembly = Assembly.LoadFrom(file);
-                    if (version==new Version()) {
-                        version = new Version(FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion);
+                    if (version==new Version()){
+                        version = new Version(FileVersionInfo.GetVersionInfo(assembly.Location+"").FileVersion);
                     }
                     foreach (var type in assembly.GetTypes()) {
                         var toolboxItemAttribute = type.GetCustomAttributes(typeof(ToolboxItemAttribute), true).OfType<ToolboxItemAttribute>().FirstOrDefault();
-                        if (toolboxItemAttribute != null && !String.IsNullOrEmpty(toolboxItemAttribute.ToolboxItemTypeName)) {
+                        if (!String.IsNullOrEmpty(toolboxItemAttribute?.ToolboxItemTypeName)) {
                             Register(type, file, registryKeys);
                             Trace.TraceInformation("Toolbox-->" + type.FullName);
                         }
@@ -53,7 +54,7 @@ namespace Xpand.ToolboxCreator {
                 catch (Exception exception) {
                     error = true;
                     var reflectionTypeLoadException = exception as ReflectionTypeLoadException;
-                    Trace.TraceError(reflectionTypeLoadException!=null?reflectionTypeLoadException.LoaderExceptions[0].Message: exception.ToString());
+                    Trace.TraceError(reflectionTypeLoadException?.LoaderExceptions[0].Message ?? exception.ToString());
                 }
             }
             if (error) {
@@ -68,10 +69,18 @@ namespace Xpand.ToolboxCreator {
             }
         }
 
+        private static void InstallPackage(string args){
+            var firstOrDefault = _vsVersions.Select(v => Environment.GetEnvironmentVariable($"VS{v}0COMNTOOLS")).FirstOrDefault(Directory.Exists);
+            var vsxInstallerPath =Path.GetFullPath(firstOrDefault + @"\..\..\Common7\IDE\VSIXInstaller.exe");
+            var processStartInfo = new ProcessStartInfo(vsxInstallerPath, "/a /q " +args){
+                WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase
+            };
+            Process.Start(processStartInfo);
+        }
+
         private static void NotifyVS(string wow, string vsVersion){
             var openSubKey =Registry.LocalMachine.OpenSubKey(@"SOFTWARE\" + wow + @"Microsoft\VisualStudio\" + vsVersion + @".0\", true);
-            if (openSubKey != null)
-                openSubKey.SetValue("ConfigurationChanged", DateTime.Now.ToFileTime(), RegistryValueKind.QWord);
+            openSubKey?.SetValue("ConfigurationChanged", DateTime.Now.ToFileTime(), RegistryValueKind.QWord);
         }
 
         static void CreateAssemblyFoldersKey(string wow) {
@@ -82,22 +91,16 @@ namespace Xpand.ToolboxCreator {
         }
 
         static void CreateXpandKey(RegistryKey assemblyFoldersKey) {
-            if (assemblyFoldersKey != null) {
-                var registryKey = assemblyFoldersKey.CreateSubKey("Xpand");
-                if (registryKey != null) {
-                    registryKey.SetValue(null, AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
-                }
-            }
+            var registryKey = assemblyFoldersKey?.CreateSubKey("Xpand");
+            registryKey?.SetValue(null, AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
         }
 
         static RegistryKey GetAssemblyFolderExKey(string wow) {
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\" + wow + @"Microsoft\.NETFramework", true);
             string minimumClrVersion = MinimumCLRVersion(registryKey);
-            if (registryKey != null) {
-                var subKey = registryKey.OpenSubKey(minimumClrVersion + @"\AssemblyFoldersEx", true);
-                if (subKey != null) {
-                    return subKey;
-                }
+            var subKey = registryKey?.OpenSubKey(minimumClrVersion + @"\AssemblyFoldersEx", true);
+            if (subKey != null) {
+                return subKey;
             }
             throw new KeyNotFoundException(minimumClrVersion + @"\AssemblyFoldersEx");
         }

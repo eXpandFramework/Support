@@ -70,7 +70,7 @@ VIAddVersionKey /LANG=${LANG_ENGLISH} CompanyName "${COMPANY}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} CompanyWebsite "${URL}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} FileVersion "${VERSION}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} FileDescription ""
-VIAddVersionKey /LANG=${LANG_ENGLISH} LegalCopyright "© 2011"
+VIAddVersionKey /LANG=${LANG_ENGLISH} LegalCopyright "ï¿½ 2011"
 ShowUninstDetails show
 BrandingText "${APP_NAME} Install System v ${VERSION}"
 
@@ -292,10 +292,10 @@ Function InstallProjectTemplatesFiles
     Push $R0
     Exch
     Pop $R0
-	CreateDirectory "$R0ProjectTemplates\CSharp\DevExpress XAF"
-    File "/oname=$R0ProjectTemplates\CSharp\DevExpress XAF\XpandFullSolutionCS.${DevExVersion}.zip" "..\..\Build\Installer\Xpand.DesignExperience\vs_templates\cs\XpandFullSolutionCS.${DevExVersion}.zip"
-	CreateDirectory "$R0ProjectTemplates\VisualBasic\DevExpress XAF"
-    File "/oname=$R0ProjectTemplates\VisualBasic\DevExpress XAF\XpandFullSolutionVB.${DevExVersion}.zip" "..\..\Build\Installer\Xpand.DesignExperience\vs_templates\vb\XpandFullSolutionVB.${DevExVersion}.zip"
+	;CreateDirectory "$R0ProjectTemplates\CSharp\DevExpress XAF"
+    ;File "/oname=$R0ProjectTemplates\CSharp\DevExpress XAF\XpandFullSolutionCS.${DevExVersion}.zip" "..\..\Build\Installer\Xpand.DesignExperience\vs_templates\cs\XpandFullSolutionCS.${DevExVersion}.zip"
+	;CreateDirectory "$R0ProjectTemplates\VisualBasic\DevExpress XAF"
+    ;File "/oname=$R0ProjectTemplates\VisualBasic\DevExpress XAF\XpandFullSolutionVB.${DevExVersion}.zip" "..\..\Build\Installer\Xpand.DesignExperience\vs_templates\vb\XpandFullSolutionVB.${DevExVersion}.zip"
     Pop $R0
 FunctionEnd
 
@@ -303,8 +303,8 @@ Function un.InstallProjectTemplatesFiles
     Push $R0
     Exch
     Pop $R0
-    Delete "$0ProjectTemplates\CSharp\DevExpress XAF\XpandFullSolutionCS.${DevExVersion}.zip"
-    Delete "$0ProjectTemplates\VisualBasic\DevExpress XAF\XpandFullSolutionVB.${DevExVersion}.zip"
+    ;Delete "$0ProjectTemplates\CSharp\DevExpress XAF\XpandFullSolutionCS.${DevExVersion}.zip"
+    ;Delete "$0ProjectTemplates\VisualBasic\DevExpress XAF\XpandFullSolutionVB.${DevExVersion}.zip"
     Pop $R0
 FunctionEnd
 

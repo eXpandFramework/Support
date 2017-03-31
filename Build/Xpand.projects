@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-	<NugetRestoreProjects Include="
-					Xpand\Xpand.Persistent\Xpand.Persistent.BaseImpl\Xpand.Persistent.BaseImpl.csproj;
-					Xpand\Xpand.ExpressApp.Modules\XtraDashboard.Web\Xpand.ExpressApp.XtraDashboard.Web.csproj;
-					Xpand\Xpand.Persistent\Xpand.Persistent.Base\Xpand.Persistent.Base.csproj;
-					"></NugetRestoreProjects>
     <CoreProjects Include="
 					Xpand\Xpand.Utils\Xpand.Utils.csproj;
 					Xpand\Xpand.Xpo\Xpand.Xpo.csproj;
@@ -22,7 +17,7 @@
 					Support\ToolboxCreator\Xpand.ToolboxCreator.csproj;
 					Support\VideoBuilder\VideoBuilder.csproj;
 					Support\GacInstaller\GacInstaller.csproj"/>
-    <VSAddons Include="Xpand.CodeRush.Plugins\Xpand.CodeRush.Plugins.sln;"></VSAddons>
+    <VSAddons Include="Xpand.Plugins\Xpand.Plugins.sln;"></VSAddons>
 	<ModuleProjects Include="
 					Xpand\Xpand.ExpressApp.Modules\Security\Xpand.ExpressApp.Security.csproj;
 					Xpand\Xpand.ExpressApp.Modules\Security.Win\Xpand.ExpressApp.Security.Win.csproj;

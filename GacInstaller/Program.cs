@@ -5,10 +5,13 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Threading.Tasks;
 using CommandLine;
 
 namespace GacInstaller {
     internal class Program {
+        private static readonly object _locker=new object();
+
         static void Main(string[] args){
             Trace.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener("GacInstaller.log") { TraceOutputOptions = TraceOptions.DateTime });
@@ -22,36 +25,45 @@ namespace GacInstaller {
             }
             string gacUtilPath = LocateGacUtil();
             bool error=false;
+            var tasks = new List<Task>();
             foreach (var file in GetFiles()) {
-                try {
-                    if (options.Regex==null||Regex.IsMatch(Path.GetFileNameWithoutExtension(file) + "", options.Regex)) {
-                        var fileName =options.Mode==Mode.Install? Path.GetFileName(file):Path.GetFileNameWithoutExtension(file);
-                        string arg=options.Mode==Mode.Install?"ir":"ur";
-                        
-                        var processStartInfo = new ProcessStartInfo(Path.Combine(gacUtilPath, ""), "/"+arg + " " + fileName + @" UNINSTALL_KEY eXpandFramework ""eXpandFramework""") { WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase, UseShellExecute = false, RedirectStandardOutput = true };
-                        var process = Process.Start(processStartInfo);
-                        Debug.Assert(process != null, "process != null");
-                        var readToEnd = process.StandardOutput.ReadToEnd();
-                        if (!readToEnd.Contains("successfully")){
-                            Trace.TraceInformation(fileName);
-                            Trace.TraceInformation(readToEnd);
+                if (options.Regex == null || Regex.IsMatch(Path.GetFileNameWithoutExtension(file) + "", options.Regex)) {
+                    var fileName = options.Mode == Mode.Install ? Path.GetFileName(file) : Path.GetFileNameWithoutExtension(file);
+                    string arg = options.Mode == Mode.Install ? "ir" : "ur";
+                    var task = Task.Factory.StartNew(() => {
+                        try{
+                            var processStartInfo = new ProcessStartInfo(Path.Combine(gacUtilPath, ""), "/" + arg + " " + fileName + @" UNINSTALL_KEY eXpandFramework ""eXpandFramework""") { WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase, UseShellExecute = false, RedirectStandardOutput = true };
+                            var process = Process.Start(processStartInfo);
+                            Debug.Assert(process != null, "process != null");
+                            var readToEnd = process.StandardOutput.ReadToEnd();
+                            lock (_locker) {
+                                if (!readToEnd.Contains("successfully")) {
+                                    Trace.TraceInformation(fileName + "");
+                                    Trace.TraceInformation(readToEnd);
+                                }
+                                else {
+                                    string action = options.Mode == Mode.Install ? " installed" : " uninstalled";
+                                    Trace.TraceInformation(fileName + action + " succefully");
+                                }
+                            }
+                            process.WaitForExit();
+
                         }
-                        else{
-                            string action=options.Mode==Mode.Install?" installed":" uninstalled";
-                            Trace.TraceInformation(fileName + action + " succefully");
+                        catch (Exception e){
+                            error = true;
+                            lock (_locker){
+                                var foregroundColor = Console.ForegroundColor;
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Trace.TraceError("ERROR in " + Path.GetFileNameWithoutExtension(file));
+                                Trace.TraceError(e.ToString());
+                                Console.ForegroundColor = foregroundColor;
+                            }
                         }
-                        process.WaitForExit();
-                    }
-                }
-                catch (Exception exception) {
-                    error = true;
-                    var foregroundColor = Console.ForegroundColor;
-                    Console.ForegroundColor=ConsoleColor.Red;
-                    Trace.TraceError("ERROR in " + Path.GetFileNameWithoutExtension(file));
-                    Trace.TraceError(exception.ToString());
-                    Console.ForegroundColor=foregroundColor;
+                    });
+                    tasks.Add(task);
                 }
             }
+            Task.WaitAll(tasks.ToArray());
             if (error)
                 Console.ReadKey();
         }
