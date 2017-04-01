@@ -24,11 +24,12 @@ namespace Xpand.ToolboxCreator {
                 var assemblyFolderExKey = GetAssemblyFolderExKey(wow);
                 assemblyFolderExKey.DeleteSubKeyTree("Xpand", false);
                 assemblyFolderExKey.Close();
-                InstallPackage(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""");
+                VSIXInstaller(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""");
                 Console.WriteLine("Unistalled");
                 return;
             }
-            InstallPackage("Xpand.VSIX.vsix");
+            var fullPath =@""""+ Path.GetFullPath(@"..\Xpand.VSIX.vsix")+@"""";
+            VSIXInstaller(fullPath);
             CreateAssemblyFoldersKey(wow);
             Trace.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(Toolboxcreatorlog){Name = "FileLog"});
@@ -69,7 +70,7 @@ namespace Xpand.ToolboxCreator {
             }
         }
 
-        private static void InstallPackage(string args){
+        private static void VSIXInstaller(string args){
             var firstOrDefault = _vsVersions.Select(v => Environment.GetEnvironmentVariable($"VS{v}0COMNTOOLS")).FirstOrDefault(Directory.Exists);
             var vsxInstallerPath =Path.GetFullPath(firstOrDefault + @"\..\..\Common7\IDE\VSIXInstaller.exe");
             var processStartInfo = new ProcessStartInfo(vsxInstallerPath, "/a /q " +args){
