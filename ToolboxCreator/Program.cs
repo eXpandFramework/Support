@@ -28,7 +28,7 @@ namespace Xpand.ToolboxCreator {
                 Console.WriteLine("Unistalled");
                 return;
             }
-            var fullPath =@""""+ Path.GetFullPath(@"..\Xpand.VSIX.vsix")+@"""";
+            var fullPath =@""""+ Directory.GetFiles(@"..\","*.vsix").First() +@"""";
             VSIXInstaller(fullPath);
             CreateAssemblyFoldersKey(wow);
             Trace.AutoFlush = true;

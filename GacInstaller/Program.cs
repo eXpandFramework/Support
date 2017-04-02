@@ -24,48 +24,67 @@ namespace GacInstaller {
                 return;
             }
             string gacUtilPath = LocateGacUtil();
-            bool error=false;
-            var tasks = new List<Task>();
+            var tasks = new List<Task<string>>();
+            bool error = false;
             foreach (var file in GetFiles()) {
                 if (options.Regex == null || Regex.IsMatch(Path.GetFileNameWithoutExtension(file) + "", options.Regex)) {
                     var fileName = options.Mode == Mode.Install ? Path.GetFileName(file) : Path.GetFileNameWithoutExtension(file);
                     string arg = options.Mode == Mode.Install ? "ir" : "ur";
-                    var task = Task.Factory.StartNew(() => {
-                        try{
-                            var processStartInfo = new ProcessStartInfo(Path.Combine(gacUtilPath, ""), "/" + arg + " " + fileName + @" UNINSTALL_KEY eXpandFramework ""eXpandFramework""") { WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase, UseShellExecute = false, RedirectStandardOutput = true };
-                            var process = Process.Start(processStartInfo);
-                            Debug.Assert(process != null, "process != null");
-                            var readToEnd = process.StandardOutput.ReadToEnd();
-                            lock (_locker) {
-                                if (!readToEnd.Contains("successfully")) {
-                                    Trace.TraceInformation(fileName + "");
-                                    Trace.TraceInformation(readToEnd);
-                                }
-                                else {
-                                    string action = options.Mode == Mode.Install ? " installed" : " uninstalled";
-                                    Trace.TraceInformation(fileName + action + " succefully");
-                                }
-                            }
-                            process.WaitForExit();
-
+                    var task = new Task<string>(() =>{
+                            var keyValuePair = GACUpdate(gacUtilPath, arg, fileName, options, file);
+                            error = keyValuePair.Value;
+                            return keyValuePair.Key;
                         }
-                        catch (Exception e){
-                            error = true;
-                            lock (_locker){
-                                var foregroundColor = Console.ForegroundColor;
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Trace.TraceError("ERROR in " + Path.GetFileNameWithoutExtension(file));
-                                Trace.TraceError(e.ToString());
-                                Console.ForegroundColor = foregroundColor;
-                            }
-                        }
-                    });
+                    );
+                    task.Start();
                     tasks.Add(task);
                 }
             }
-            Task.WaitAll(tasks.ToArray());
+            while (tasks.Count>0){
+                var array = tasks.Cast<Task>().ToArray();
+                var i = Task.WaitAny(array);
+                var task = tasks[i];
+                Trace.TraceInformation(task.Result);
+                tasks.Remove(task);
+            }
+            
             if (error)
                 Console.ReadKey();
+        }
+
+        private static KeyValuePair<string,bool> GACUpdate(string gacUtilPath, string arg, string fileName, Options options, string file){
+            bool error = false;
+            string msg = null;
+            try{
+                var processStartInfo = new ProcessStartInfo(Path.Combine(gacUtilPath, ""),
+                    "/" + arg + " " + fileName + @" UNINSTALL_KEY eXpandFramework ""eXpandFramework"""){
+                    WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                var process = Process.Start(processStartInfo);
+                Debug.Assert(process != null, "process != null");
+                var readToEnd = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                if (!readToEnd.Contains("successfully")) {
+                    msg = fileName + Environment.NewLine + readToEnd;
+                }
+                else {
+                    string action = options.Mode == Mode.Install ? " installed" : " uninstalled";
+                    msg = fileName + action + " succefully";
+                }
+            }
+            catch (Exception e){
+                error = true;
+                lock (_locker){
+                    var foregroundColor = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Trace.TraceError("ERROR in " + Path.GetFileNameWithoutExtension(file));
+                    Trace.TraceError(e.ToString());
+                    Console.ForegroundColor = foregroundColor;
+                }
+            }
+            return new KeyValuePair<string, bool>(msg,error);
         }
 
         private static string LocateGacUtil(){
