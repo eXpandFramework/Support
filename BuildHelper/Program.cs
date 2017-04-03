@@ -63,7 +63,7 @@ namespace BuildHelper {
         }
 
         static string GetVersion(string rootDir) {
-            using (var fileStream = File.OpenRead(Path.Combine(rootDir, @"Xpand\Xpand.Utils\Properties\AssemblyInfo.cs"))) {
+            using (var fileStream = File.OpenRead(Path.Combine(rootDir, @"Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"))) {
                 using (var streamReader = new StreamReader(fileStream)) {
                     return Regex.Match(streamReader.ReadToEnd(), "Version = \"(?<version>[^\"]*)", RegexOptions.Singleline | RegexOptions.IgnoreCase)
                                 .Groups["version"].Value;
