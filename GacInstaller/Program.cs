@@ -5,7 +5,6 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Linq;
-using System.Threading.Tasks;
 using CommandLine;
 
 namespace GacInstaller {
@@ -24,28 +23,16 @@ namespace GacInstaller {
                 return;
             }
             string gacUtilPath = LocateGacUtil();
-            var tasks = new List<Task<string>>();
             bool error = false;
-            foreach (var file in GetFiles()) {
+            foreach (var file in GetFiles().AsParallel()) {
                 if (options.Regex == null || Regex.IsMatch(Path.GetFileNameWithoutExtension(file) + "", options.Regex)) {
                     var fileName = options.Mode == Mode.Install ? Path.GetFileName(file) : Path.GetFileNameWithoutExtension(file);
                     string arg = options.Mode == Mode.Install ? "ir" : "ur";
-                    var task = new Task<string>(() =>{
-                            var keyValuePair = GACUpdate(gacUtilPath, arg, fileName, options, file);
-                            error = keyValuePair.Value;
-                            return keyValuePair.Key;
-                        }
-                    );
-                    task.Start();
-                    tasks.Add(task);
+                    var keyValuePair = GACUpdate(gacUtilPath, arg, fileName, options, file);
+                    if (keyValuePair.Value)
+                        error = true;
+                    Trace.WriteLine(keyValuePair.Key);
                 }
-            }
-            while (tasks.Count>0){
-                var array = tasks.Cast<Task>().ToArray();
-                var i = Task.WaitAny(array);
-                var task = tasks[i];
-                Trace.TraceInformation(task.Result);
-                tasks.Remove(task);
             }
             
             if (error)
