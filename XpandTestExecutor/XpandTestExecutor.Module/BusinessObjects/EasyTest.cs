@@ -196,7 +196,22 @@ namespace XpandTestExecutor.Module.BusinessObjects {
                 applicationElement.SetAttributeValue("UserName",userName);
                 document.Save(fileName);
             }
-            
+            var xElements = document.Descendants("Application").Where(element => element.Attributes("Ignored").Any()).ToArray();
+            foreach (var element in xElements){
+                var value = element.Attribute("Ignored")?.Value+"";
+                var ignored = bool.Parse(value)?"1":"0";
+                element.SetAttributeValue("Ignored",ignored);
+                document.Save(fileName);
+            }
+            var elements = document.Descendants("Application").Where(element => element.Attributes("DropDatabase").Any());
+            foreach (var element in elements){
+                var attribute = element.Attribute("DropDatabase");
+                if (attribute != null){
+                    var databases = string.Join("_"+userName+";", attribute.Value.Split(';'))+"_"+userName;
+                    element.SetAttributeValue("DropDatabase",databases);
+                    document.Save(fileName);
+                }
+            }
         }
 
         public EasyTestExecutionInfo GetLastEasyTestExecutionInfo(ExecutionInfo executionInfo){

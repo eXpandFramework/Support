@@ -103,7 +103,7 @@ namespace XpandTestExecutor.Module.Services{
                 DataLayer = dataLayer,
                 DebugMode = debugMode
             };
-            var task = new Task<TestData>(o => RunTest((TestData) o), testData, _cancellationToken);
+            var task = new Task<TestData>(o => RunTest((TestData) o), testData, _cancellationToken,TaskCreationOptions.AttachedToParent|TaskCreationOptions.LongRunning);
             task.Start();
             return task;
         }

@@ -20,7 +20,6 @@ namespace XpandTestExecutor.Module.Services {
 
         public static void UpdateTestConfig(EasyTestExecutionInfo easyTestExecutionInfo, bool unlink) {
             if (!unlink){
-//                IngoreWebApplication(easyTestExecutionInfo.EasyTest);
                 UpdatePort(easyTestExecutionInfo);
                 UpdateApplications(easyTestExecutionInfo);
                 UpdateAppBinAlias(easyTestExecutionInfo);
@@ -33,15 +32,6 @@ namespace XpandTestExecutor.Module.Services {
                 File.Copy(fileName, Path.Combine(Path.GetDirectoryName(easyTestExecutionInfo.EasyTest.FileName) + "", "config.xml"), true);
             }
         }
-
-//        private static void IngoreWebApplication(EasyTest easyTest){
-//            var testApplication = easyTest.Options.Applications.Cast<TestApplication>().FirstOrDefault(application => application.Name.EndsWith(".Web"));
-//            if (testApplication != null){
-//                testApplication.Ignored = true;
-//                easyTest.SerializeOptions(null);
-//            }
-//        }
-
 
         private static void UpdateAlias(EasyTestExecutionInfo easyTestExecutionInfo){
             var options = easyTestExecutionInfo.EasyTest.Options;

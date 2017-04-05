@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -33,7 +32,6 @@ namespace XpandTestExecutor.Module.Controllers {
         private const string Run = "Run";
         private readonly SimpleAction _runTestAction;
         private CancellationTokenSource _cancellationTokenSource;
-        private readonly SimpleAction _unlinkTestAction;
         private TestControllerHelper _testControllerHelper;
 
         public TestController() {
@@ -43,11 +41,11 @@ namespace XpandTestExecutor.Module.Controllers {
             };
             _runTestAction.Execute += RunTestActionOnExecute;
 
-            _unlinkTestAction = new SimpleAction(this, "UnlinkTest", PredefinedCategory.View) {
+            var unlinkTestAction = new SimpleAction(this, "UnlinkTest", PredefinedCategory.View) {
                 Caption = "Unlink",
                 SelectionDependencyType = SelectionDependencyType.RequireMultipleObjects
             };
-            _unlinkTestAction.Execute+=UnlinkTestActionOnExecute;   
+            unlinkTestAction.Execute+=UnlinkTestActionOnExecute;   
         }
 
         protected override void OnActivated() {
@@ -93,7 +91,9 @@ namespace XpandTestExecutor.Module.Controllers {
                 _cancellationTokenSource=new CancellationTokenSource();
                 var easyTestFiles = e.SelectedObjects.Cast<EasyTest>().Select(test => test.FileName).ToArray();
                 Task.Factory.StartNew(() => TestExecutor.Execute(easyTestFiles, IsDebug, _cancellationTokenSource.Token,
-                        ((IModelOptionsTestExecutor) Application.Model.Options).ExecutionRetries))
+                            ((IModelOptionsTestExecutor) Application.Model.Options).ExecutionRetries),
+                        _cancellationTokenSource.Token,
+                        TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning, TaskScheduler.Default)
                     .ContinueWith(
                         task =>{
                             _runTestAction.Caption = Run;
