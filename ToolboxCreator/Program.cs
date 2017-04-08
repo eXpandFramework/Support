@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DevExpress.Utils;
 using Microsoft.Win32;
@@ -21,9 +20,9 @@ namespace Xpand.ToolboxCreator{
             Trace.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(Toolboxcreatorlog){Name = "FileLog"});
             Trace.Listeners.Add(new ConsoleTraceListener{Name = "ConsoleLog"});
-            var isWow64 = InternalCheckIsWow64();
             
-            string wow = isWow64 ? @"Wow6432Node\" : null;
+            
+            string wow = Environment.Is64BitProcess ? @"Wow6432Node\" : null;
             var registryKeys = RegistryKeys(wow);
 
             if (args.Length == 1 && args[0] == "u"){
@@ -32,7 +31,7 @@ namespace Xpand.ToolboxCreator{
                     var assemblyFolderExKey = GetAssemblyFolderExKey(wow);
                     assemblyFolderExKey.DeleteSubKeyTree("Xpand", false);
                     assemblyFolderExKey.Close();
-                    VSIXInstaller(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""");
+                    VSIXInstaller(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""", wow);
                     Console.WriteLine("Unistalled");
                 }
                 catch (Exception e){
@@ -49,7 +48,7 @@ namespace Xpand.ToolboxCreator{
             try{
                 var vsixPath = Path.GetFullPath(AppDomain.CurrentDomain.SetupInformation.ApplicationBase+ @"..\");
                 var vsix = @"""" + Directory.GetFiles(vsixPath,"*.vsix").First()+ @"""" ;
-                VSIXInstaller(vsix);
+                VSIXInstaller(vsix,wow);
                 CreateAssemblyFoldersKey(wow);
             }
             catch (Exception e){
@@ -99,17 +98,36 @@ namespace Xpand.ToolboxCreator{
             }
         }
 
-        private static void VSIXInstaller(string args){
-            var firstOrDefault =
-                _vsVersions.Select(v => Environment.GetEnvironmentVariable($"VS{v}0COMNTOOLS"))
-                    .FirstOrDefault(Directory.Exists);
-            var vsxInstallerPath = Path.GetFullPath(firstOrDefault + @"\..\..\Common7\IDE\VSIXInstaller.exe");
+        private static void VSIXInstaller(string args, string wow) {
+            var vsxInstallerPath = VisxInstallerPath(wow);
             Trace.TraceInformation("vsxInstallerPath="+ vsxInstallerPath);
             var processStartInfo = new ProcessStartInfo(vsxInstallerPath, "/a /q " + args){
                 WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase
             };
             Trace.TraceInformation("WorkingDirectory="+ AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
             Process.Start(processStartInfo);
+        }
+
+        private static string VisxInstallerPath(string wow){
+            var vsVersions = new[] { @"VisualStudio",  @"VCSExpress", "VBExpress" };
+            foreach (var vsVersion in vsVersions){
+                string keyPath = $@"SOFTWARE\{wow}Microsoft\{vsVersion}";
+                var registryBase32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                var subKey = registryBase32.OpenSubKey(keyPath);
+                if (subKey != null)
+                    foreach (var subKeyName in subKey.GetSubKeyNames()) {
+                        var registryKey = subKey.OpenSubKey(subKeyName);
+                        if (registryKey != null){
+                            var installDir = registryKey.GetValue("InstallDir") + "";
+                            if (Directory.Exists(installDir)) {
+                                var installer = Path.Combine(installDir + "VSIXInstaller.exe");
+                                if (File.Exists(installer))
+                                    return installer;
+                            }
+                        }
+                    }
+            }
+            throw new FileNotFoundException("VSIXInstaller");
         }
 
         private static void NotifyVS(string wow, string vsVersion){
@@ -191,27 +209,5 @@ namespace Xpand.ToolboxCreator{
             }
         }
 
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool IsWow64Process(
-            [In] IntPtr hProcess,
-            [Out] out bool wow64Process
-        );
-
-        static bool InternalCheckIsWow64(){
-            bool is64BitProcess = (IntPtr.Size == 8);
-            return is64BitProcess || InternalCheckIsWow64Core();
-        }
-
-        static bool InternalCheckIsWow64Core(){
-            if ((Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor >= 1) ||
-                Environment.OSVersion.Version.Major >= 6){
-                using (Process p = Process.GetCurrentProcess()){
-                    bool retVal;
-                    return IsWow64Process(p.Handle, out retVal) && retVal;
-                }
-            }
-            return false;
-        }
     }
 }
