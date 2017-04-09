@@ -12,7 +12,7 @@ using Microsoft.Win32;
 namespace Xpand.ToolboxCreator{
     class Program{
         private const string Toolboxcreatorlog = "toolboxcreator.log";
-        private static readonly int[] _vsVersions = {10, 11, 12, 14, 16};
+        private static readonly int[] _vsVersions = {10, 11, 12, 14, 15};
 
         static void Main(string[] args){
             
@@ -27,11 +27,10 @@ namespace Xpand.ToolboxCreator{
 
             if (args.Length == 1 && args[0] == "u"){
                 try{
-                    DeleteXpandEntries(registryKeys);
                     var assemblyFolderExKey = GetAssemblyFolderExKey(wow);
                     assemblyFolderExKey.DeleteSubKeyTree("Xpand", false);
                     assemblyFolderExKey.Close();
-                    VSIXInstaller(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""", wow);
+                    VSIXInstaller(@"/u:""Xpand.VSIX.Apostolis Bekiaris.4ab62fb3-4108-4b4d-9f45-8a265487d3dc""");
                     Console.WriteLine("Unistalled");
                 }
                 catch (Exception e){
@@ -48,7 +47,8 @@ namespace Xpand.ToolboxCreator{
             try{
                 var vsixPath = Path.GetFullPath(AppDomain.CurrentDomain.SetupInformation.ApplicationBase+ @"..\");
                 var vsix = @"""" + Directory.GetFiles(vsixPath,"*.vsix").First()+ @"""" ;
-                VSIXInstaller(vsix,wow);
+                DeleteXpandEntries(registryKeys);
+                VSIXInstaller(vsix);
                 CreateAssemblyFoldersKey(wow);
             }
             catch (Exception e){
@@ -98,37 +98,14 @@ namespace Xpand.ToolboxCreator{
             }
         }
 
-        private static void VSIXInstaller(string args, string wow) {
-            var vsxInstallerPath = VisxInstallerPath(wow);
-            Trace.TraceInformation("vsxInstallerPath="+ vsxInstallerPath);
-            var processStartInfo = new ProcessStartInfo(vsxInstallerPath, "/a /q " + args){
+        private static void VSIXInstaller(string args) {
+            var processStartInfo = new ProcessStartInfo("VSIXBootstrapper.exe", "/a /q " + args){
                 WorkingDirectory = AppDomain.CurrentDomain.SetupInformation.ApplicationBase
             };
             Trace.TraceInformation("WorkingDirectory="+ AppDomain.CurrentDomain.SetupInformation.ApplicationBase);
             Process.Start(processStartInfo);
         }
 
-        private static string VisxInstallerPath(string wow){
-            var vsVersions = new[] { @"VisualStudio",  @"VCSExpress", "VBExpress" };
-            foreach (var vsVersion in vsVersions){
-                string keyPath = $@"SOFTWARE\{wow}Microsoft\{vsVersion}";
-                var registryBase32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-                var subKey = registryBase32.OpenSubKey(keyPath);
-                if (subKey != null)
-                    foreach (var subKeyName in subKey.GetSubKeyNames()) {
-                        var registryKey = subKey.OpenSubKey(subKeyName);
-                        if (registryKey != null){
-                            var installDir = registryKey.GetValue("InstallDir") + "";
-                            if (Directory.Exists(installDir)) {
-                                var installer = Path.Combine(installDir + "VSIXInstaller.exe");
-                                if (File.Exists(installer))
-                                    return installer;
-                            }
-                        }
-                    }
-            }
-            throw new FileNotFoundException("VSIXInstaller");
-        }
 
         private static void NotifyVS(string wow, string vsVersion){
             var openSubKey =

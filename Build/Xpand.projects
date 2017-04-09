@@ -17,7 +17,7 @@
 					Support\ToolboxCreator\Xpand.ToolboxCreator.csproj;
 					Support\VideoBuilder\VideoBuilder.csproj;
 					Support\GacInstaller\GacInstaller.csproj"/>
-    <VSAddons Include="Xpand.Plugins\Xpand.Plugins.sln;"></VSAddons>
+    <VSAddons Include="Xpand.Plugins\Xpand.ExpressApp.ModelEditor\Xpand.ExpressApp.ModelEditor.csproj;"></VSAddons>
 	<ModuleProjects Include="
 					Xpand\Xpand.ExpressApp.Modules\Security\Xpand.ExpressApp.Security.csproj;
 					Xpand\Xpand.ExpressApp.Modules\Security.Win\Xpand.ExpressApp.Security.Win.csproj;
