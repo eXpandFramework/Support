@@ -19,8 +19,8 @@ namespace XpandTestExecutor.Module.Services {
                 StepName = valueName,
                 EasyTestExecutionInfo = easyTestExecutionInfo
             };
-            easyTestExecutionInfoStep.Session.ValidateAndCommitChanges();
             easyTestExecutionInfo.EasyTestExecutionInfoSteps.Add(easyTestExecutionInfoStep);
+            easyTestExecutionInfoStep.Session.ValidateAndCommitChanges();
             tracing.LogValue(easyTestExecutionInfo.ToString(), valueName);
         }
 
