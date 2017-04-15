@@ -35,7 +35,9 @@ namespace RDClient {
             Task.WaitAll(task);
         }
 
-        private void OnLoad(object sender, EventArgs eventArgs) {
+        private void OnLoad(object sender, EventArgs eventArgs){
+            Task.Factory.StartNew(() => Thread.Sleep(Options.Instance.TimeOut))
+                .ContinueWith(task => Close(), TaskScheduler.FromCurrentSynchronizationContext());
             var options = Options.Instance;
             Text = options.UserName;
             Connect(options.UserName,options.Password,Options.Instance.Domain);
