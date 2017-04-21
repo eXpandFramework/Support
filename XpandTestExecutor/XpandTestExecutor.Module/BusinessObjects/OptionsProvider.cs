@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml.Serialization;
 using DevExpress.EasyTest.Framework;
-using Fasterflect;
+using DevExpress.ExpressApp;
 
 namespace XpandTestExecutor.Module.BusinessObjects {
     public class OptionsProvider {
@@ -41,9 +41,8 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         }
 
         public static Options LoadOptions(Stream optionsStream, string profileName, string overrides, string configPath) {
-            Options options = (Options)new XmlSerializer(typeof(Options)).Deserialize(new AliasesComposer(profileName, overrides).ComposeAliases(optionsStream, configPath));
-            options.SetFieldValue("profileName",profileName) ;
-            options.SetFieldValue("overrides", overrides) ;
+            var testAliasList = new OptionsLoader().Load(optionsStream, profileName, ViewShortcut.Empty, configPath).Aliases;
+            var options = (Options)new XmlSerializer(typeof(Options)).Deserialize(new AliasesComposer(testAliasList).Compose(optionsStream));
             return options;
         }
 

@@ -174,7 +174,7 @@ namespace XpandTestExecutor.Module.Services{
         private void CopyXafLogs(string directoryName){
             var fileName = Path.Combine(directoryName, "config.xml");
             using (var optionsStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)){
-                var options = Options.LoadOptions(optionsStream, null, null, directoryName);
+                var options = new OptionsLoader().Load(optionsStream, null, null, directoryName);
                 foreach (var alias in options.Aliases.Cast<TestAlias>().Where(alias => alias.ContainsAppPath())){
                     var suffix = alias.IsWinAppPath() ? "_win" : "_web";
                     var sourceFileName = Path.Combine(alias.Value, "eXpressAppFramework.log");
