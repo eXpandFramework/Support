@@ -8,7 +8,7 @@ Push-Location "$XpandFolder"
 Remove-Item "$XpandFolder\Build\" -Recurse -Force
 $installerFolder="$XpandFolder\Build\Installer"
 New-Item -ItemType Directory $installerFolder
-$packageFolder ="$XpandFolder\Build\_Package"
+$packageFolder ="$XpandFolder\Build\_Package\$DXVersion\"
 New-Item -ItemType Directory $packageFolder
 
 #Create Xpand.DLL
@@ -23,8 +23,8 @@ ZipFiles -zipfilename $packageFolder\Xpand-lib-$DXVersion.zip -sourcedir $instal
 #Copy ModelEditor 
 Copy-Item -Path ".\Xpand.DLL\PLugins\Xpand.ExpressApp.ModelEditor.exe" -Destination "$installerFolder\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe"
 #Copy vsix
-Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$installerFolder\\Xpand.VSIX.-$DXVersion.vsix"
-Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$packageFolder\\Xpand.VSIX.-$DXVersion.vsix"
+Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$installerFolder\\Xpand.VSIX-$DXVersion.vsix"
+Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$packageFolder\\Xpand.VSIX-$DXVersion.vsix"
 
 #CreateSourceZip
 $sourceFolder="$installerFolder\Source\"
