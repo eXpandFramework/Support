@@ -14,11 +14,13 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#Dashboard</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="17.1.2.1" />
-      <dependency id="eXpandSecurity" version="17.1.2.1" />
+      <dependency id="eXpandLib" version="17.1.2.2" />
+      <dependency id="eXpandSecurity" version="17.1.2.2" />
     </dependencies>
   </metadata>
   <files>
+    <file src="\Build\Temp\Xpand.ExpressApp.Dashboard.dll" target="lib\net40\Xpand.ExpressApp.Dashboard.dll" />
+    <file src="\Build\Temp\Xpand.ExpressApp.Dashboard.pdb" target="lib\net40\Xpand.ExpressApp.Dashboard.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.Dashboard.dll" target="lib\net40\Xpand.ExpressApp.Dashboard.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.Dashboard.pdb" target="lib\net40\Xpand.ExpressApp.Dashboard.pdb" />
   </files>
