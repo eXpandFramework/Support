@@ -14,12 +14,10 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#Workflow</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="17.1.2.2" />
+      <dependency id="eXpandLib" version="17.1.2.3" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.Workflow.dll" target="lib\net40\Xpand.ExpressApp.Workflow.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.Workflow.pdb" target="lib\net40\Xpand.ExpressApp.Workflow.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.Workflow.dll" target="lib\net40\Xpand.ExpressApp.Workflow.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.Workflow.pdb" target="lib\net40\Xpand.ExpressApp.Workflow.pdb" />
   </files>
