@@ -145,8 +145,10 @@ namespace XpandTestExecutor.Module.Services{
                 CopyXafLogs(directoryName);
                 var logTests = easyTest.GetLogTests();
                 var state = EasyTestState.Passed;
-                if (!logTests.Any())
+                if (!logTests.Any()){
                     state = EasyTestState.Failed;
+                    easyTestExecutionInfo.LogNotExists = true;
+                }
                 else{
                     if (logTests.Where(test => test.Result!="Ignored").Any(test => test.Result!=EasyTestState.Passed.ToString()))
                         state=EasyTestState.Failed;

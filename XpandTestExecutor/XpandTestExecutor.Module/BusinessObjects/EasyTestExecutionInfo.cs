@@ -173,6 +173,8 @@ namespace XpandTestExecutor.Module.BusinessObjects {
         [Browsable(false)]
         public bool IsTimeouted => CalcTimeout(End==DateTime.MinValue ? DateTime.Now : End);
 
+        public bool LogNotExists { get; set; }
+
         private bool CalcTimeout(DateTime dateTime){
             return Start != DateTime.MinValue &&
                    (dateTime - Start).TotalMinutes + 1 > EasyTest.Options.DefaultTimeout;

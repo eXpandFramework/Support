@@ -45,7 +45,7 @@ namespace XpandTestExecutor.Module.BusinessObjects {
             var fileName = Path.Combine(directoryName, "testslog.xml");
             if (File.Exists(fileName)) {
                 using (var optionsStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-                    return LogTests.LoadTestsResults(optionsStream).Tests.Where(test => test != null&&test.Result!="Ignored").ToArray();
+                    return LogTests.LoadTestsResults(optionsStream).Tests.Where(test => test != null).ToArray();
                 }
             }
             return new LogTest[0];
