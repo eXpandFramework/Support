@@ -16,7 +16,7 @@ New-Item -ItemType Directory -Path "$installerFolder\Xpand.DLL" -ErrorAction Ign
 Get-ChildItem -Path ".\Xpand.DLL" -Include "*.*" | 
 Where-Object{
     $fullName=$_.FullName
-    (("*.dll","*.exe","*.config"|where{$fullName -like $_}).Length -gt 0) -and ($fullName -notlike "*\Plugins\*")
+    (("*.dll","*.exe","*.config","*.pdb"|where{$fullName -like $_}).Length -gt 0) -and ($fullName -notlike "*\Plugins\*")
 } | 
 Copy-Item -Destination "$installerFolder\Xpand.DLL\" -Force
 ZipFiles -zipfilename $packageFolder\Xpand-lib-$DXVersion.zip -sourcedir $installerFolder\Xpand.DLL
