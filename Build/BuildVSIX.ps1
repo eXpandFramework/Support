@@ -42,9 +42,16 @@ $project.SelectNodes("//ns:TargetFrameworkVersion",$ns)|foreach{
 $project.Save($fileName);
 
 #upgrade nuget to latest version
-$expression="$nugetExe update $fileName -FileConflictAction Ignore"
-Write-Host $expression
-Invoke-Expression $expression
+$packages=[xml](Get-Content $package)
+$packages.SelectNodes("//package")|foreach{
+    $packageId=$_.Attributes["id"].Value
+    $excludedPackage=("Fody","PropertyChanged.Fody"|where{$packageId -eq $_}).Length -eq 0
+    if ($excludedPackage){
+        $expression="$nugetExe update $fileName -FileConflictAction Ignore -Id $packageId"        
+        Write-Host $expression
+        Invoke-Expression $expression
+    }
+}
 
 #build VSIX
 & "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false" 
