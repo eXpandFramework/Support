@@ -3,7 +3,10 @@ Param (
     [string]$msbuild="C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe",
     [string]$DXVersion="0.0.0.0"
 )
-
+. "$PSScriptRoot\Utils.ps1"
+if ($DXVersion -eq "0.0.0.0"){
+    $DXVersion=Get-Version -path "$PSScriptRoot\..\..\"
+}
 #update version in templates
 $version=New-Object System.Version ($DXVersion)
 Write-Host "version=$version"

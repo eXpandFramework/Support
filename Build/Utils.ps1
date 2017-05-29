@@ -24,3 +24,15 @@ function ZipFiles( $zipfilename, $sourcedir ){
    [System.IO.Compression.ZipFile]::CreateFromDirectory($sourcedir,
         $zipfilename, $compressionLevel, $false)
 }
+
+function Get-Version ($path) { 
+    $XpandPath=$path
+    $assemblyInfo="$XpandPath\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
+    $matches = Get-Content $assemblyInfo -ErrorAction Stop | Select-String 'public const string Version = \"([^\"]*)'
+    if ($matches) {
+        return $matches[0].Matches.Groups[1].Value
+    }
+    else{
+        Write-Error "Version info not found in $assemblyInfo"
+    }
+}

@@ -4,6 +4,9 @@ Param (
 )
 . "$PSScriptRoot\Utils.ps1"
 Push-Location "$XpandFolder"
+if ($DXVersion -eq "0.0.0.0"){
+    $DXVersion=Get-Version -path "$XpandFolder"
+}
 
 Remove-Item "$XpandFolder\Build\" -Recurse -Force
 $installerFolder="$XpandFolder\Build\Installer"
