@@ -40,7 +40,7 @@ namespace BuildHelper {
             UpdateReferences(document, directoryName, file);
             UpdateNugetTargets(document, file);
             UpdateConfig(file);
-            UpdateLanguageVersion(document,file);
+//            UpdateLanguageVersion(document,file);
             if (SyncConfigurations(document))
                 DocumentHelper.Save(document, file);
 
