@@ -41,7 +41,7 @@ namespace Xpand.ToolboxCreator {
             }
             try {
                 var vsixPath = Path.GetFullPath(AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"..\");
-                var vsix = @"""" + Directory.GetFiles(vsixPath, "*.vsix").First() + @"""";
+                var vsix = @"""" + Directory.GetFiles(vsixPath, "*.vsix").FirstOrDefault() + @"""";
                 VSIXInstaller(vsix);
                 CreateAssemblyFoldersKey(wow);
             }
