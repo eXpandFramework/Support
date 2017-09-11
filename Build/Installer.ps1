@@ -33,7 +33,7 @@ Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$packageFolder\\Xpand.VSIX-$DXV
 $sourceFolder="$installerFolder\Source\"
 Get-ChildItem $XpandFolder -recurse -Include "*.*" |where{
     $fullName=$_.FullName
-    ("*\Build\Installer*","*\Build\_Package*", "*\.git\*",'*\$RECYCLE.BIN\*',"*\System Volume Information\*","*\_third_party_assemblies\*",
+    ("*\Build\Installer*","*\Build\_Package*", "*\.git\*",'*\$RECYCLE.BIN\*',"*\System Volume Information\*",
     "*\dxbuildgenerator\packages\*","*\_Resharper\*","*\ScreenCapture\*","*.log","*web_view.html","win_view.html",
     "web_view.jpeg","win_view.jpeg","*\Xpand.DLL\*","*.user","*\.vs\*","*.suo","*\bin\*","*\obj\*","*.docstates","*teamcity*","*.gitattributes","*.gitmodules","*.gitignore"|
     where{$fullName -like $_}).Length -eq 0
