@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>eXpandVSIX</id>
+        <version>1.0.0</version>
+        <title>VSIX package</title>
+        <authors>Tolis</authors>
+        <owners>eXpandFramework</owners>
+        <projectUrl>http://expandframework.com/</projectUrl>
+        <iconUrl>http://expandframework.com/images/site/logo.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Helpful tools and commands to work with DevExpress XAF framework</description>
+        <summary>Includes XpandModelEditor, DropDatabase, Load Projects from references, EasyTest commands, Exception filtering, Invoke Scripts on VS events and many other custom commands</summary>
+    </metadata>
+    <files>
+        <file src="..\..\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe" target="content\Xpand.ExpressApp.ModelEditor.exe" />
+        <file src="lib\_._" target="lib\_._" />
+        <file src="tools\init.ps1" target="tools\init.ps1" />
+        <file src="tools\install.ps1" target="tools\install.ps1" />
+        <file src="tools\uninstall.ps1" target="tools\uninstall.ps1" />
+        <file src="..\..\Build\Installer\Xpand.VSIX-17.1.6.4.vsix" target="tools\Xpand.VSIX-17.1.6.4.vsix" />
+    </files>
+</package>
