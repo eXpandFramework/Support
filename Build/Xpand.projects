@@ -50,6 +50,7 @@
                     Xpand\Xpand.ExpressApp.Modules\MapView.Web\Xpand.ExpressApp.MapView.Web.csproj;
                     Xpand\Xpand.ExpressApp.Modules\MasterDetail\Xpand.ExpressApp.MasterDetail.csproj;
                     Xpand\Xpand.ExpressApp.Modules\MasterDetail.Win\Xpand.ExpressApp.MasterDetail.Win.csproj;
+                    Xpand\Xpand.ExpressApp.Modules\ViewVariants\Xpand.ExpressApp.ViewVariants.csproj;
                     Xpand\Xpand.ExpressApp.Modules\ModelDifference\Xpand.ExpressApp.ModelDifference.csproj;
                     Xpand\Xpand.ExpressApp.Modules\ModelDifference.Web\Xpand.ExpressApp.ModelDifference.Web.csproj;
                     Xpand\Xpand.ExpressApp.Modules\ModelDifference.Win\Xpand.ExpressApp.ModelDifference.Win.csproj;
@@ -67,7 +68,6 @@
                     Xpand\Xpand.ExpressApp.Modules\Scheduler.Win\Xpand.ExpressApp.Scheduler.Win.csproj;
                     Xpand\Xpand.ExpressApp.Modules\Scheduler.Web\Xpand.ExpressApp.Scheduler.Web.csproj;
                     Xpand\Xpand.ExpressApp.Modules\StateMachine\Xpand.ExpressApp.StateMachine.csproj;
-                    Xpand\Xpand.ExpressApp.Modules\ViewVariants\Xpand.ExpressApp.ViewVariants.csproj;
                     Xpand\Xpand.ExpressApp.Modules\WizardUI.Win\Xpand.ExpressApp.WizardUI.Win.csproj;
                     Xpand\Xpand.ExpressApp.Modules\Workflow\Xpand.ExpressApp.Workflow.csproj;
                     Xpand\Xpand.ExpressApp.Modules\WorldCreator\Xpand.ExpressApp.WorldCreator.csproj;
