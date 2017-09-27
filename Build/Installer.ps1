@@ -24,7 +24,7 @@ Where-Object{
 Copy-Item -Destination "$installerFolder\Xpand.DLL\" -Force
 ZipFiles -zipfilename $packageFolder\Xpand-lib-$DXVersion.zip -sourcedir $installerFolder\Xpand.DLL
 #Copy ModelEditor 
-Copy-Item -Path ".\Xpand.DLL\PLugins\Xpand.ExpressApp.ModelEditor.exe" -Destination "$installerFolder\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe"
+Copy-Item -Path ".\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe" -Destination "$installerFolder\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe"
 #Copy vsix
 Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$installerFolder\\Xpand.VSIX-$DXVersion.vsix"
 Copy-Item ".\Xpand.DLL\PLugins\Xpand.VSIX.vsix" "$packageFolder\\Xpand.VSIX-$DXVersion.vsix"
