@@ -15,15 +15,14 @@
     <projectUrl>http://www.expandframework.com/#JobScheduler</projectUrl>
     <dependencies>
       <dependency id="Common.Logging" version="2.1.2" />
-      <dependency id="eXpandJobScheduler" version="17.1.7.7" />
-      <dependency id="eXpandLib" version="17.1.7.7" />
+      <dependency id="eXpandJobScheduler" version="17.2.1.0" />
+      <dependency id="eXpandLib" version="17.2.1.0" />
       <dependency id="Quartz" version="2.2.4" />
       <dependency id="RazorEngine" version="3.7.3" />
+      <dependency id="System.Web.Razor" version="2.0.30506.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.JobScheduler.Jobs.dll" target="lib\net40\Xpand.ExpressApp.JobScheduler.Jobs.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.JobScheduler.Jobs.pdb" target="lib\net40\Xpand.ExpressApp.JobScheduler.Jobs.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.JobScheduler.Jobs.dll" target="lib\net40\Xpand.ExpressApp.JobScheduler.Jobs.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.JobScheduler.Jobs.pdb" target="lib\net40\Xpand.ExpressApp.JobScheduler.Jobs.pdb" />
   </files>

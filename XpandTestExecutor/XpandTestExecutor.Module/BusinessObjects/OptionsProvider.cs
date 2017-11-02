@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml.Serialization;
 using DevExpress.EasyTest.Framework;
+using DevExpress.EasyTest.Framework.Utils;
 using DevExpress.ExpressApp;
 
 namespace XpandTestExecutor.Module.BusinessObjects {

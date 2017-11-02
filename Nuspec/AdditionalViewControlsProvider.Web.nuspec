@@ -14,14 +14,15 @@
     <projectUrl>http://www.expandframework.com/#AVC</projectUrl>
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <dependencies>
-      <dependency id="eXpandAdditionalViewControlsProvider" version="17.1.7.7" />
-      <dependency id="eXpandLib" version="17.1.7.7" />
-      <dependency id="eXpandLogic" version="17.1.7.7" />
+      <dependency id="eXpandAdditionalViewControlsProvider" version="17.2.1.0" />
+      <dependency id="eXpandLib" version="17.2.1.0" />
+      <dependency id="eXpandLogic" version="17.2.1.0" />
+      <dependency id="eXpandSecurity" version="17.2.1.0" />
+      <dependency id="eXpandSystem" version="17.2.1.0" />
+      <dependency id="eXpandSystemWeb" version="17.2.1.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.dll" target="lib\net40\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.pdb" target="lib\net40\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.dll" target="lib\net40\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.pdb" target="lib\net40\Xpand.ExpressApp.AdditionalViewControlsProvider.Web.pdb" />
   </files>

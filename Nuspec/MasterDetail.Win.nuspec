@@ -14,14 +14,13 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#masterdetail</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="17.1.7.7" />
-      <dependency id="eXpandMasterDetail" version="17.1.7.7" />
-      <dependency id="eXpandSystemWin" version="17.1.7.7" />
+      <dependency id="eXpandLib" version="17.2.1.0" />
+      <dependency id="eXpandLogic" version="17.2.1.0" />
+      <dependency id="eXpandMasterDetail" version="17.2.1.0" />
+      <dependency id="eXpandSystemWin" version="17.2.1.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.MasterDetail.Win.dll" target="lib\net40\Xpand.ExpressApp.MasterDetail.Win.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.MasterDetail.Win.pdb" target="lib\net40\Xpand.ExpressApp.MasterDetail.Win.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.MasterDetail.Win.dll" target="lib\net40\Xpand.ExpressApp.MasterDetail.Win.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.MasterDetail.Win.pdb" target="lib\net40\Xpand.ExpressApp.MasterDetail.Win.pdb" />
   </files>

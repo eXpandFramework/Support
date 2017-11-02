@@ -23,12 +23,13 @@ http://apobekiaris.blogspot.com/search/label/ModelDifference. To debug in VS ena
     <copyright>eXpandFramework.com</copyright>
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <dependencies>
-      <dependency id="eXpandModelDifference" version="17.1.7.7" />
+      <dependency id="eXpandLib" version="17.2.1.0" />
+      <dependency id="eXpandModelDifference" version="17.2.1.0" />
+      <dependency id="eXpandSecurity" version="17.2.1.0" />
+      <dependency id="eXpandSecurityWeb" version="17.2.1.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.ModelDifference.Web.dll" target="lib\net40\Xpand.ExpressApp.ModelDifference.Web.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.ModelDifference.Web.pdb" target="lib\net40\Xpand.ExpressApp.ModelDifference.Web.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.ModelDifference.Web.dll" target="lib\net40\Xpand.ExpressApp.ModelDifference.Web.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.ModelDifference.Web.pdb" target="lib\net40\Xpand.ExpressApp.ModelDifference.Web.pdb" />
   </files>
