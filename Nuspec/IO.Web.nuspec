@@ -14,8 +14,8 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#IO</projectUrl>
     <dependencies>
-      <dependency id="eXpandIO" version="17.2.1.0" />
-      <dependency id="eXpandLib" version="17.2.1.0" />
+      <dependency id="eXpandIO" version="17.2.2.1" />
+      <dependency id="eXpandLib" version="17.2.2.1" />
     </dependencies>
   </metadata>
   <files>
