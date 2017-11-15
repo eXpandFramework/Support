@@ -16,14 +16,12 @@ http://apobekiaris.blogspot.com/search/label/WorldCreator</description>
     <copyright>eXpandFramework.com</copyright>
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <dependencies>
-      <dependency id="eXpandLib" version="17.1.7.8" />
-      <dependency id="eXpandSystemWeb" version="17.1.7.8" />
-      <dependency id="eXpandWorldCreator" version="17.1.7.8" />
+      <dependency id="eXpandLib" version="17.1.8.1" />
+      <dependency id="eXpandSystemWeb" version="17.1.8.1" />
+      <dependency id="eXpandWorldCreator" version="17.1.8.1" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.WorldCreator.Web.dll" target="lib\net40\Xpand.ExpressApp.WorldCreator.Web.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.WorldCreator.Web.pdb" target="lib\net40\Xpand.ExpressApp.WorldCreator.Web.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.WorldCreator.Web.dll" target="lib\net40\Xpand.ExpressApp.WorldCreator.Web.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.WorldCreator.Web.pdb" target="lib\net40\Xpand.ExpressApp.WorldCreator.Web.pdb" />
   </files>
