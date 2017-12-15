@@ -50,3 +50,5 @@ log.txt
 _third_party_assemblies/EasyTests.txt
 _third_party_assemblies/Packages/*
 *.sln.metaproj*
+
+*/.vs
