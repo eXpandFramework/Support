@@ -14,9 +14,9 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#treelist</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="17.2.4.1" />
-      <dependency id="eXpandSystemWin" version="17.2.4.1" />
-      <dependency id="eXpandTreelistView" version="17.2.4.1" />
+      <dependency id="eXpandLib" version="17.2.4.3" />
+      <dependency id="eXpandSystemWin" version="17.2.4.3" />
+      <dependency id="eXpandTreelistView" version="17.2.4.3" />
     </dependencies>
   </metadata>
   <files>
