@@ -40,11 +40,11 @@ namespace BuildHelper {
             UpdateReferences(document, directoryName, file);
             UpdateNugetTargets(document, file);
             UpdateConfig(file);
-//            UpdateLanguageVersion(document,file);
+            UpdateLanguageVersion(document,file);
             if (SyncConfigurations(document))
                 DocumentHelper.Save(document, file);
 
-            var licElement = document.Descendants().FirstOrDefault(element => element.Name.LocalName == "EmbeddedResource" && element.Attribute("Include").Value == @"Properties\licenses.licx");
+            var licElement = document.Descendants().FirstOrDefault(element => element.Name.LocalName == "EmbeddedResource" && element.Attribute("Include")?.Value == @"Properties\licenses.licx");
             if (licElement != null) {
                 licElement.Remove();
                 DocumentHelper.Save(document,file);
@@ -60,17 +60,18 @@ namespace BuildHelper {
                 var langVersionElement = propertyGroup.Descendants().FirstOrDefault(element => element.Name.LocalName== "LangVersion")?? new XElement(XNamespace + "LangVersion");
                 if (string.IsNullOrEmpty(langVersionElement.Value))
                     propertyGroup.Add(langVersionElement);
-                langVersionElement.Value = "6";
+                langVersionElement.Value = "latest";
             }
             DocumentHelper.Save(document,file );
         }
 
         private void UpdateProjectReferences(XDocument document, string file){
-            var xpandProjectReferences = document.Descendants().Where(element => element.Name.LocalName == "ProjectReference" && Path.GetFileName(element.Attribute("Include").Value).StartsWith("Xpand.")).ToArray();
+            var xpandProjectReferences = document.Descendants().Where(element => element.Name.LocalName == "ProjectReference" && Path.GetFileName(element.Attribute("Include")?.Value).StartsWith("Xpand.")).ToArray();
             var references = document.Descendants().Where(xElement => xElement.Name.LocalName=="Reference").Select(element => element.Parent).First();
             foreach (var element in xpandProjectReferences){
                 var referenceElement = new XElement(XNamespace + "Reference");
-                var value = Path.GetFileNameWithoutExtension(element.Attribute("Include").Value);
+                var value = Path.GetFileNameWithoutExtension(element.Attribute("Include")?.Value);
+                Debug.Assert(value != null, nameof(value) + " != null");
                 referenceElement.Add(new XAttribute("Include", value));
                 references.Add(referenceElement);
                 element.Remove();
@@ -96,7 +97,7 @@ namespace BuildHelper {
         }
 
         private static bool NugetPathMatch(XElement element, string nugetTargetsPath){
-            return String.Equals(element.Attribute("Project").Value, nugetTargetsPath, StringComparison.InvariantCultureIgnoreCase);
+            return String.Equals(element.Attribute("Project")?.Value, nugetTargetsPath, StringComparison.InvariantCultureIgnoreCase);
         }
 
         private bool SyncConfigurations(XDocument document){
@@ -182,7 +183,7 @@ namespace BuildHelper {
         }
 
         bool AlreadyReferenced(XDocument document, string reference) {
-            return document.Descendants().Any(element => element.Name.LocalName == "Reference" && element.Attribute("Include").Value == reference);
+            return document.Descendants().Any(element => element.Name.LocalName == "Reference" && element.Attribute("Include")?.Value == reference);
         }
 
         bool HasReferenceRequirement(XDocument document, string reference) {
@@ -191,12 +192,12 @@ namespace BuildHelper {
 
         bool HasReferenceRequirementInReferenceProjects(XDocument document, string reference) {
             var documents = document.Descendants().Where(element => element.Name.LocalName == "ProjectReference").Select(element
-                => DocumentHelper.GetXDocument(Path.GetFullPath(element.Attribute("Include").Value)));
+                => DocumentHelper.GetXDocument(Path.GetFullPath(element.Attribute("Include")?.Value)));
             return documents.Any(xDocument => HasReferenceRequirementInProject(xDocument, reference));
         }
 
         bool HasReferenceRequirementInProject(XDocument document, string reference) {
-            return document.Descendants().Any(element => element.Name.LocalName == "Reference" && element.Attribute("Include").Value == reference);
+            return document.Descendants().Any(element => element.Name.LocalName == "Reference" && element.Attribute("Include")?.Value == reference);
         }
 
         bool IsApplicationProject(XDocument document){
@@ -227,19 +228,19 @@ namespace BuildHelper {
             foreach (XElement reference in references) {
                 var attribute = reference.Attribute("Include");
 
-                var value = Regex.Match(attribute.Value, "(Xpand.[^,]*)|(DevExpress.[^,]*)", RegexOptions.Singleline | RegexOptions.IgnoreCase).Value;
-                if (string.CompareOrdinal(attribute.Value, value) != 0) {
-                    attribute.Value = value;
+                var value = Regex.Match(attribute?.Value, "(Xpand.[^,]*)|(DevExpress.[^,]*)", RegexOptions.Singleline | RegexOptions.IgnoreCase).Value;
+                if (string.CompareOrdinal(attribute?.Value, value) != 0){
+                    if (attribute != null) attribute.Value = value;
                     DocumentHelper.Save(document, file);
                 }
 
                 UpdateElementValue(reference, "SpecificVersion", "False", file, document);
 
-                if (_copyLocalReferences.Any(s => attribute.Value.StartsWith(s)))
+                if (_copyLocalReferences.Any(s => attribute != null && attribute.Value.StartsWith(s)))
                     UpdateElementValue(reference, "Private", "True", file, document);
 
                 if (reference.Attribute("Include").Value.StartsWith("Xpand.")) {
-                    var path = Extensions.PathToRoot(directoryName,RootDir) + @"Xpand.DLL\" + attribute.Value + ".dll";
+                    var path = Extensions.PathToRoot(directoryName,RootDir) + @"Xpand.DLL\" + attribute?.Value + ".dll";
                     UpdateElementValue(reference, "HintPath", path, file, document);
                 }
             }
@@ -259,7 +260,7 @@ namespace BuildHelper {
         }
 
         bool IsXpandOrDXElement(XElement element) {
-            return element.Name.LocalName == "Reference" && Regex.IsMatch(element.Attribute("Include").Value, "(Xpand)|(DevExpress)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            return element.Name.LocalName == "Reference" && Regex.IsMatch(element.Attribute("Include")?.Value, "(Xpand)|(DevExpress)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         }
     }
 }
