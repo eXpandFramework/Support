@@ -16,8 +16,8 @@
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
       <dependency id="ExcelDataReader.DataSet" version="3.4.0" />
-      <dependency id="eXpandLib" version="17.2.6.2" />
-      <dependency id="eXpandValidation" version="17.2.6.2" />
+      <dependency id="eXpandLib" version="17.2.7.1" />
+      <dependency id="eXpandValidation" version="17.2.7.1" />
     </dependencies>
   </metadata>
   <files>
