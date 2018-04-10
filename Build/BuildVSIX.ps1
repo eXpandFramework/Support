@@ -1,6 +1,6 @@
 Param (
     [string]$XpandFolder=(Get-XpandPath),
-    [string]$msbuild="C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe",
+    [string]$msbuild="C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe",
     [string]$DXVersion="0.0.0.0"
 )
 . "$PSScriptRoot\Utils.ps1"
@@ -31,37 +31,37 @@ $expression="$nugetExe restore $fileName"
 Write-Host $expression
 Invoke-Expression $expression
 
-#upgrade csproj to dotnet 4.6
-Copy-Item $fileName -Destination $fileName"Copy" -Force
-$package=(Split-Path $fileName -Parent)+"\packages.config"
-Copy-Item $package -Destination $package"Copy" -Force
-$project=[xml](Get-Content $fileName)
-$ns = New-Object System.Xml.XmlNamespaceManager($project.NameTable)
-$ns.AddNamespace("ns", $project.DocumentElement.NamespaceURI)
+# #upgrade csproj to dotnet 4.6
+# Copy-Item $fileName -Destination $fileName"Copy" -Force
+# $package=(Split-Path $fileName -Parent)+"\packages.config"
+# Copy-Item $package -Destination $package"Copy" -Force
+# $project=[xml](Get-Content $fileName)
+# $ns = New-Object System.Xml.XmlNamespaceManager($project.NameTable)
+# $ns.AddNamespace("ns", $project.DocumentElement.NamespaceURI)
 
-$project.SelectNodes("//ns:TargetFrameworkVersion",$ns)|foreach{
-    $_.InnerText="v4.6"
-}
-$project.Save($fileName);
+# $project.SelectNodes("//ns:TargetFrameworkVersion",$ns)|foreach{
+#     $_.InnerText="v4.6"
+# }
+# $project.Save($fileName);
 
 #upgrade nuget to latest version
-$packages=[xml](Get-Content $package)
-$packages.SelectNodes("//package")|foreach{
-    $packageId=$_.Attributes["id"].Value
-    $excludedPackage=("Fody","PropertyChanged.Fody"|where{$packageId -eq $_}).Length -eq 0
-    if ($excludedPackage){
-        $expression="$nugetExe update $fileName -FileConflictAction Ignore -Id $packageId"        
-        Write-Host $expression
-        Invoke-Expression $expression
-    }
-}
+# $packages=[xml](Get-Content $package)
+# $packages.SelectNodes("//package")|foreach{
+#     $packageId=$_.Attributes["id"].Value
+#     $excludedPackage=("Fody","PropertyChanged.Fody"|where{$packageId -eq $_}).Length -eq 0
+#     if ($excludedPackage){
+#         $expression="$nugetExe update $fileName -FileConflictAction Ignore -Id $packageId"        
+#         Write-Host $expression
+#         Invoke-Expression $expression
+#     }
+# }
 
 #build VSIX
 & "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false" 
 
 #reset enviroment
-Move-Item $fileName"Copy" -Destination $fileName -Force
-Move-Item $package"Copy" -Destination $package -Force
-Pop-Location
+# Move-Item $fileName"Copy" -Destination $fileName -Force
+# Move-Item $package"Copy" -Destination $package -Force
+# Pop-Location
 
 
