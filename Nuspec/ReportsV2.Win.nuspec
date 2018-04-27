@@ -14,11 +14,13 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#Reports</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="17.2.7.3" />
-      <dependency id="eXpandReports" version="17.2.7.3" />
+      <dependency id="eXpandLib" version="17.2.7.4" />
+      <dependency id="eXpandReports" version="17.2.7.4" />
     </dependencies>
   </metadata>
   <files>
+    <file src="\Build\Temp\Xpand.ExpressApp.ReportsV2.Win.dll" target="lib\net40\Xpand.ExpressApp.ReportsV2.Win.dll" />
+    <file src="\Build\Temp\Xpand.ExpressApp.ReportsV2.Win.pdb" target="lib\net40\Xpand.ExpressApp.ReportsV2.Win.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.ReportsV2.Win.dll" target="lib\net40\Xpand.ExpressApp.ReportsV2.Win.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.ReportsV2.Win.pdb" target="lib\net40\Xpand.ExpressApp.ReportsV2.Win.pdb" />
   </files>

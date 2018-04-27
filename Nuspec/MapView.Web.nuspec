@@ -14,13 +14,15 @@
     <copyright>eXpandFramework.com</copyright>
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <dependencies>
-      <dependency id="eXpandLib" version="17.2.7.3" />
-      <dependency id="eXpandMapView" version="17.2.7.3" />
-      <dependency id="eXpandSystem" version="17.2.7.3" />
-      <dependency id="eXpandSystemWeb" version="17.2.7.3" />
+      <dependency id="eXpandLib" version="17.2.7.4" />
+      <dependency id="eXpandMapView" version="17.2.7.4" />
+      <dependency id="eXpandSystem" version="17.2.7.4" />
+      <dependency id="eXpandSystemWeb" version="17.2.7.4" />
     </dependencies>
   </metadata>
   <files>
+    <file src="\Build\Temp\Xpand.ExpressApp.MapView.Web.dll" target="lib\net40\Xpand.ExpressApp.MapView.Web.dll" />
+    <file src="\Build\Temp\Xpand.ExpressApp.MapView.Web.pdb" target="lib\net40\Xpand.ExpressApp.MapView.Web.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.MapView.Web.dll" target="lib\net40\Xpand.ExpressApp.MapView.Web.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.MapView.Web.pdb" target="lib\net40\Xpand.ExpressApp.MapView.Web.pdb" />
   </files>

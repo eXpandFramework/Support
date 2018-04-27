@@ -14,12 +14,13 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#treelist</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="17.2.7.3" />
-      <dependency id="eXpandTreelistView" version="17.2.7.3" />
-      <dependency id="Fasterflect" version="2.1.3" />
+      <dependency id="eXpandLib" version="17.2.7.4" />
+      <dependency id="eXpandTreelistView" version="17.2.7.4" />
     </dependencies>
   </metadata>
   <files>
+    <file src="\Build\Temp\Xpand.ExpressApp.TreeListEditors.Web.dll" target="lib\net40\Xpand.ExpressApp.TreeListEditors.Web.dll" />
+    <file src="\Build\Temp\Xpand.ExpressApp.TreeListEditors.Web.pdb" target="lib\net40\Xpand.ExpressApp.TreeListEditors.Web.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.TreeListEditors.Web.dll" target="lib\net40\Xpand.ExpressApp.TreeListEditors.Web.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.TreeListEditors.Web.pdb" target="lib\net40\Xpand.ExpressApp.TreeListEditors.Web.pdb" />
   </files>

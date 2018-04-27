@@ -15,13 +15,14 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="ExcelDataReader.DataSet" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="17.2.7.3" />
-      <dependency id="eXpandLib" version="17.2.7.3" />
-      <dependency id="eXpandSystemWeb" version="17.2.7.3" />
+      <dependency id="eXpandExcelImporter" version="17.2.7.4" />
+      <dependency id="eXpandLib" version="17.2.7.4" />
+      <dependency id="eXpandSystemWeb" version="17.2.7.4" />
     </dependencies>
   </metadata>
   <files>
+    <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Web.dll" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Web.dll" />
+    <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Web.pdb" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Web.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Web.dll" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Web.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Web.pdb" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Web.pdb" />
   </files>
