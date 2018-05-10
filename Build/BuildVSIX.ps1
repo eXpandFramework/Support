@@ -4,6 +4,7 @@ Param (
     [string]$DXVersion="0.0.0.0"
 )
 . "$PSScriptRoot\Utils.ps1"
+
 if ($DXVersion -eq "0.0.0.0"){
     $DXVersion=Get-Version -path "$PSScriptRoot\..\..\"
 }
@@ -22,7 +23,16 @@ Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.zip" -Re
     Get-ChildItem $tempPath | Compress-Archive -DestinationPath $_ -Force 
     Remove-Item $tempPath -Recurse -Force
 }
-    
+
+Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.vstemplate" -Recurse|foreach{
+    $content=Get-Content $_
+    $content = $content -ireplace "TemplateWizard.v([^,]*),", "TemplateWizard.v$($version.Major).$($version.Minor),"
+    Set-Content $_ $content
+}
+
+
+$content=Get-Content $vsTemplate
+$content = $content -ireplace 'eXpandFramework v([^ ]*)', "eXpandFramework v$($version.Major).$($version.Minor)"
 
 #restore nuget
 $fileName="$XpandFolder\Xpand.Plugins\Xpand.VSIX\Xpand.VSIX.csproj"
@@ -31,37 +41,10 @@ $expression="$nugetExe restore $fileName"
 Write-Host $expression
 Invoke-Expression $expression
 
-# #upgrade csproj to dotnet 4.6
-# Copy-Item $fileName -Destination $fileName"Copy" -Force
-# $package=(Split-Path $fileName -Parent)+"\packages.config"
-# Copy-Item $package -Destination $package"Copy" -Force
-# $project=[xml](Get-Content $fileName)
-# $ns = New-Object System.Xml.XmlNamespaceManager($project.NameTable)
-# $ns.AddNamespace("ns", $project.DocumentElement.NamespaceURI)
-
-# $project.SelectNodes("//ns:TargetFrameworkVersion",$ns)|foreach{
-#     $_.InnerText="v4.6"
-# }
-# $project.Save($fileName);
-
-#upgrade nuget to latest version
-# $packages=[xml](Get-Content $package)
-# $packages.SelectNodes("//package")|foreach{
-#     $packageId=$_.Attributes["id"].Value
-#     $excludedPackage=("Fody","PropertyChanged.Fody"|where{$packageId -eq $_}).Length -eq 0
-#     if ($excludedPackage){
-#         $expression="$nugetExe update $fileName -FileConflictAction Ignore -Id $packageId"        
-#         Write-Host $expression
-#         Invoke-Expression $expression
-#     }
-# }
 
 #build VSIX
 & "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false" 
 
-#reset enviroment
-# Move-Item $fileName"Copy" -Destination $fileName -Force
-# Move-Item $package"Copy" -Destination $package -Force
-# Pop-Location
+
 
 
