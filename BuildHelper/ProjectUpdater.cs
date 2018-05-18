@@ -91,13 +91,15 @@ namespace BuildHelper {
                 Debug.Assert(document.Root != null, "document.Root != null");
                 var element = new XElement(XNamespace + "Import");
                 element.SetAttributeValue("Project", nugetTargetsPath);
+                element.SetAttributeValue("Condition",$"Exists('{nugetTargetsPath}')");
                 document.Root.Add(element);
                 DocumentHelper.Save(document, file);
             }
         }
 
         private static bool NugetPathMatch(XElement element, string nugetTargetsPath){
-            return String.Equals(element.Attribute("Project")?.Value, nugetTargetsPath, StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(element.Attribute("Project")?.Value, nugetTargetsPath,
+                       StringComparison.InvariantCultureIgnoreCase)&& element.Attributes("Condition").Any();
         }
 
         private bool SyncConfigurations(XDocument document){

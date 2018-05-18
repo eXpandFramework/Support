@@ -68,5 +68,5 @@
     <Message Text="@(FFMPERG)"></Message>
     <Copy SourceFiles="@(FFMPERG)" DestinationFolder="$(OutputPath)"></Copy>
   </Target>
-  <Import Project="..\..\Support\Build\Nuget.Targets" />
+  <Import Project="..\..\Support\Build\Nuget.Targets" Condition="Exists('..\..\Support\Build\Nuget.Targets')" />
 </Project>
