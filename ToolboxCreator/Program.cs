@@ -14,7 +14,7 @@ namespace Xpand.ToolboxCreator {
 
             var error = false;
             Trace.AutoFlush = true;
-            Trace.Listeners.Add(new TextWriterTraceListener(Toolboxcreatorlog) { Name = "FileLog" });
+            Trace.Listeners.Add(new TextWriterTraceListener(Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase,Toolboxcreatorlog)) { Name = "FileLog" });
             Trace.Listeners.Add(new ConsoleTraceListener { Name = "ConsoleLog" });
 
 

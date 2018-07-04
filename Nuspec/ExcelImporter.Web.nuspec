@@ -15,9 +15,9 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="18.1.4.1" />
-      <dependency id="eXpandLib" version="18.1.4.1" />
-      <dependency id="eXpandSystemWeb" version="18.1.4.1" />
+      <dependency id="eXpandExcelImporter" version="18.1.4.2" />
+      <dependency id="eXpandLib" version="18.1.4.2" />
+      <dependency id="eXpandSystemWeb" version="18.1.4.2" />
     </dependencies>
   </metadata>
   <files>
