@@ -15,12 +15,17 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
+      <dependency id="ExcelDataReader.DataSet" version="3.4.0" />
       <dependency id="eXpandExcelImporter" version="18.1.4.2" />
       <dependency id="eXpandLib" version="18.1.4.2" />
       <dependency id="eXpandSystemWin" version="18.1.4.2" />
+      <dependency id="JetBrains.Annotations" version="10.2.1" />
+      <dependency id="System.Reactive" version="4.1.0-preview.84" />
       <dependency id="System.Reactive.Core" version="3.1.1" />
       <dependency id="System.Reactive.Interfaces" version="3.1.1" />
       <dependency id="System.Reactive.Linq" version="3.1.1" />
+      <dependency id="System.Reactive.PlatformServices" version="3.1.1" />
+      <dependency id="System.Reactive.Windows.Threading" version="3.1.1" />
       <dependency id="System.ValueTuple" version="4.4.0" />
     </dependencies>
   </metadata>
@@ -29,5 +34,6 @@
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.pdb" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.dll" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.pdb" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.pdb" />
+    <file src="\Build\Temp\WindowsBase.dll" target="lib\net40\WindowsBase.dll" />
   </files>
 </package>

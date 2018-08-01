@@ -14,6 +14,7 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#Scheduler</projectUrl>
     <dependencies>
+      <dependency id="eXpandDashboard" version="18.1.4.2" />
       <dependency id="eXpandLib" version="18.1.4.2" />
       <dependency id="eXpandScheduler" version="18.1.4.2" />
     </dependencies>

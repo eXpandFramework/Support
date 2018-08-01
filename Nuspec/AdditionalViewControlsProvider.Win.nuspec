@@ -16,6 +16,8 @@
     <dependencies>
       <dependency id="eXpandAdditionalViewControlsProvider" version="18.1.4.2" />
       <dependency id="eXpandLib" version="18.1.4.2" />
+      <dependency id="eXpandLogic" version="18.1.4.2" />
+      <dependency id="eXpandSecurity" version="18.1.4.2" />
     </dependencies>
   </metadata>
   <files>
