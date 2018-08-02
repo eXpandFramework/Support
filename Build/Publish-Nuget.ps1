@@ -8,7 +8,7 @@ $nuspecFiles= "$basePath/Support/Nuspec"
 $assemblyInfo="$basePath\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 $matches = Get-Content $assemblyInfo -ErrorAction Stop | Select-String 'public const string Version = \"([^\"]*)'
 $DXVersion=$matches[0].Matches.Groups[1].Value 
-$nupkgPath=Resolve-Path "$PSScriptRoot\..\..\Build\Nuget"
+$nupkgPath= "$PSScriptRoot\..\..\Build\Nuget"
 New-Item $nupkgPath -ItemType Directory -ErrorAction Continue
 $nugetExe=Resolve-Path $PSScriptRoot+"\..\Tool\nuget.exe"
 
