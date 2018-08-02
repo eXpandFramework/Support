@@ -27,13 +27,4 @@ Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
 }
 
 
-
-Write-Host Starting nuget restore from $currentLocation\Restore-Nuget.ps1....
-Invoke-InParallel -InputObject $projects -Parameter $paramObject -runspaceTimeout 30 -ScriptBlock {  
-        Push-Location $parameter.location
-        $nugetPath=$parameter.nugetExe
-        $sb= "cmd /c $nugetPath restore $_"
-        $expr=Invoke-Expression $sb
-        Write-Host "$_::::$expr"
-    }
     
