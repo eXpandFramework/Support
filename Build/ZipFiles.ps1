@@ -5,7 +5,7 @@ Function Zip-Files {
         [string]$fileName,
         [string]$dir,
         [System.IO.Compression.CompressionLevel]$compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal,
-        [bool]$deleteAfterArchiving
+        [bool]$deleteAfterArchiving=$True
     )
     Begin {
         Write-Verbose "Initialize stuff in Begin block"
