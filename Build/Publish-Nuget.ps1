@@ -1,3 +1,4 @@
+. "$PSScriptRoot\zipfiles.ps1"
 Param (
     [string]$apiKey
 )
@@ -8,7 +9,7 @@ Set-Location $basePath
 $nuspecFiles= "$basePath/Support/Nuspec"
 $assemblyInfo="$basePath\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 $matches = Get-Content $assemblyInfo -ErrorAction Stop | Select-String 'public const string Version = \"([^\"]*)'
-$DXVersion=$matches[0].Matches.Groups[1].Value 
+$XpandVersion=$matches[0].Matches.Groups[1].Value 
 $nupkgPath= "$PSScriptRoot\..\..\Build\Nuget"
 New-Item $nupkgPath -ItemType Directory -ErrorAction SilentlyContinue
 $nupkgPath=[System.IO.Path]::GetFullPath($nupkgPath)
@@ -31,11 +32,15 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
 Remove-Item "$nupkgPath" -Force -Recurse -ErrorAction sil 
 Get-ChildItem -Path $nuspecFiles -Filter *.nuspec | foreach{
     Start-Process $nugetExe 
-    $sb= "cmd /c $nugetExe pack $($_.FullName) -OutputDirectory $nupkgPath -Version $DXVersion -BasePath $basePath\build\temp\$_"
+    $sb= "cmd /c $nugetExe pack $($_.FullName) -OutputDirectory $nupkgPath -Version $XpandVersion -BasePath $basePath\build\temp\$_"
     $expr=Invoke-Expression "$sb"
     
     Write-Host "$_::::$expr"
 }
+Set-Location $nupkgPath
+Zip-Files
+Copy-Item "$nupkgPath\nuget.zip" "$basepath\Build\_package\$XpandVersion\Nupkg$XpandVersion.zip"
+# Get-ChildItem -Path $nupkgPath | Where-Object { $_.Extension -eq ".nupkg" } | ForEach-Object { Write-Zip -Path $_.FullName -OutputPath "$_.zip" }
 return
 #push
 Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
