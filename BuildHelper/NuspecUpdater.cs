@@ -13,9 +13,10 @@ namespace BuildHelper {
         private readonly string[] _projects;
         private readonly string[] _nuspecs;
         internal static readonly XNamespace XNamespace = XNamespace.Get("http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd");
-
+        readonly Dictionary<string,string> _packageMap=new  Dictionary<string, string>();
         public NuspecUpdater(IDocumentHelper documentHelper, string rootDir, string version, string[] projects, string[] nuspecs)
             : base(documentHelper, rootDir){
+            _packageMap.Add("CSScriptLibrary","CS-Script");
             _version = version;
             _projects = projects;
             _nuspecs = nuspecs;
@@ -116,8 +117,8 @@ namespace BuildHelper {
             metadataElement.Descendants(XNamespace+"dependencies").Remove();
             var dependenciesElement = new XElement(XNamespace + "dependencies");
             var packages = dependencies.Select(pair 
-                => new { Name = GetAssemblyName(pair.Key), Version = pair.Value }).Select(arg 
-                    => new { Id = GetXpandPackageId(arg.Name), arg.Version }).OrderBy(arg => arg.Id).GroupBy(arg => arg.Id).Select(grouping => grouping.First()).ToArray();
+                => new { Name = GetAssemblyName(pair.Key), pair.Value.Version ,pair.Value.Id}).Select(arg 
+                    => new { Id = GetPackageId(arg.Name,arg.Id), arg.Version }).OrderBy(arg => arg.Id).GroupBy(arg => arg.Id).Select(grouping => grouping.First()).ToArray();
             foreach (var package in packages) {
                 var dependencyElement = new XElement(XNamespace + "dependency");
                 dependencyElement.SetAttributeValue("id",package.Id);
@@ -126,8 +127,8 @@ namespace BuildHelper {
             }
             metadataElement.Add(dependenciesElement);
         }
-
-        private string GetXpandPackageId(string assemblyName){
+        
+        private string GetPackageId(string assemblyName, string id){
             if (assemblyName.StartsWith("Xpand")){
                 var adjustName = AdjustName(assemblyName).ToLowerInvariant();
                 var nuspec = FindNuspec(adjustName);
@@ -144,22 +145,23 @@ namespace BuildHelper {
                 }
                 return XDocument.Load(nuspec).Descendants(XNamespace + "id").First().Value;
             }
-            return assemblyName;
+            return id;
         }
 
         private string FindNuspec(string adjustName){
             return _nuspecs.FirstOrDefault(s => adjustName == (Path.GetFileNameWithoutExtension(s)+"").ToLowerInvariant());
         }
 
-        private IEnumerable<KeyValuePair<XElement, string>> GetDependencies(IEnumerable<KeyValuePair<string, IEnumerable<XElement>>> references, bool isLibSpec) {
-            var elements = new List<KeyValuePair<XElement, string>>();
+        private IEnumerable<KeyValuePair<XElement, (string Id,string Version)>> GetDependencies(IEnumerable<KeyValuePair<string, IEnumerable<XElement>>> references, bool isLibSpec) {
+            var elements = new List<KeyValuePair<XElement, (string, string)>>();
             foreach (var reference in references){
                 var path = Path.Combine(Path.GetDirectoryName(reference.Key)+"", "packages.config");
                 foreach (var element in reference.Value){
                     var assemblyName = GetAssemblyName(element).ToLowerInvariant();
                     var version = _version;
+                    string packageId = null;
                     if(!assemblyName.StartsWith("xpand")) {
-                        var packageId = GetPackageId(element)??assemblyName;
+                        packageId = GetPackageId(element)??assemblyName;
                         var packagesConfig = (File.Exists(path) ? File.ReadAllText(path) : "").ToLowerInvariant();
                         var regex = new Regex("<package id=\"" + packageId + "\" .*version=\"([^\"]*).*/>",RegexOptions.IgnoreCase);
                         var match = regex.Match(packagesConfig);
@@ -172,7 +174,7 @@ namespace BuildHelper {
                     }
                     if (isLibSpec && GetLibHashSet().Any(s => assemblyName.ToLowerInvariant().Contains(s)))
                         continue;
-                    elements.Add(new KeyValuePair<XElement, string>(element, version));
+                    elements.Add(new KeyValuePair<XElement, (string,string)>(element, (packageId,version)));
                 }
             }
             return elements.DistinctBy(pair => pair.Key.Attribute("Include")?.Value);
