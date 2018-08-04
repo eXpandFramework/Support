@@ -15,16 +15,14 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="18.1.5.1" />
-      <dependency id="eXpandLib" version="18.1.5.1" />
-      <dependency id="eXpandSystemWin" version="18.1.5.1" />
-      <dependency id="System.Reactive" version="4.1.0-preview.84" />
-      <dependency id="System.ValueTuple" version="4.4.0" />
+      <dependency id="eXpandExcelImporter" version="18.1.5.2" />
+      <dependency id="eXpandLib" version="18.1.5.2" />
+      <dependency id="eXpandSystemWin" version="18.1.5.2" />
+      <dependency id="System.Reactive" version="4.0.0" />
+      <dependency id="System.ValueTuple" version="4.5.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.dll" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.pdb" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.dll" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.ExcelImporter.Win.pdb" target="lib\net40\Xpand.ExpressApp.ExcelImporter.Win.pdb" />
   </files>

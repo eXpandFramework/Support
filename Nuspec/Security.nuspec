@@ -14,13 +14,11 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#Security</projectUrl>
     <dependencies>
-      <dependency id="eXpandLib" version="18.1.5.1" />
-      <dependency id="Fasterflect" version="2.1.3" />
+      <dependency id="eXpandLib" version="18.1.5.2" />
+      <dependency id="fasterflect" version="2.1.3" />
     </dependencies>
   </metadata>
   <files>
-    <file src="\Build\Temp\Xpand.ExpressApp.Security.dll" target="lib\net40\Xpand.ExpressApp.Security.dll" />
-    <file src="\Build\Temp\Xpand.ExpressApp.Security.pdb" target="lib\net40\Xpand.ExpressApp.Security.pdb" />
     <file src="\Build\Temp\Xpand.ExpressApp.Security.dll" target="lib\net40\Xpand.ExpressApp.Security.dll" />
     <file src="\Build\Temp\Xpand.ExpressApp.Security.pdb" target="lib\net40\Xpand.ExpressApp.Security.pdb" />
   </files>
