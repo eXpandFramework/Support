@@ -218,7 +218,10 @@ namespace BuildHelper {
                 if (Program.Options.AfterBuild){
                     var assemblyPath = Path.Combine(RootDir, (@"Xpand.dll\" + Path.GetFileNameWithoutExtension(s) + ".dll"));
                     var assemblies = Assembly.ReflectionOnlyLoadFrom(assemblyPath).GetReferencedAssemblies().Select(name => name.Name).ToArray();
-                    xElements = xElements.Where(element => assemblies.Contains(GetAssemblyName(element)));
+                    xElements = xElements.Where(element => {
+                        var assemblyName = GetAssemblyName(element);
+                        return assemblies.Contains(assemblyName)||assemblyName.ToUpper().Contains("POSIX");
+                    });
                 }
                 return new KeyValuePair<string, IEnumerable<XElement>>(s, xElements);
             });
