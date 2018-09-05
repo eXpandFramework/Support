@@ -15,9 +15,9 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="18.1.5.4" />
-      <dependency id="eXpandLib" version="18.1.5.4" />
-      <dependency id="eXpandSystemWin" version="18.1.5.4" />
+      <dependency id="eXpandExcelImporter" version="18.1.5.5" />
+      <dependency id="eXpandLib" version="18.1.5.5" />
+      <dependency id="eXpandSystemWin" version="18.1.5.5" />
       <dependency id="System.Reactive" version="4.0.0" />
       <dependency id="System.ValueTuple" version="4.5.0" />
     </dependencies>
