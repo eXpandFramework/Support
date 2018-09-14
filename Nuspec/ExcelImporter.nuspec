@@ -16,8 +16,9 @@
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
       <dependency id="ExcelDataReader.DataSet" version="3.4.0" />
-      <dependency id="eXpandLib" version="18.1.6.1" />
-      <dependency id="eXpandValidation" version="18.1.6.1" />
+      <dependency id="eXpandLib" version="18.1.6.2" />
+      <dependency id="eXpandValidation" version="18.1.6.2" />
+      <dependency id="SharpZipLib" version="0.86.0" />
       <dependency id="System.Reactive" version="4.0.0" />
       <dependency id="System.ValueTuple" version="4.5.0" />
     </dependencies>
