@@ -36,16 +36,17 @@ Get-ChildItem -Path $nuspecFiles -Filter *.nuspec | foreach{
     Write-Host "$_::::$expr"
 }
 Set-Location $nupkgPath
-
-Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
-    $sb= "cmd /c $nugetExe push $_ $($apiKey) -source https://api.nuget.org/v3/index.json" 
-    $expr=Invoke-Expression $sb
-    Write-Host "$_::::$expr"
-}
-
-Zip-Files
-Get-ChildItem $basepath\Build\_package |foreach{
-    Copy-Item "$nupkgPath\nuget.zip" -Destination "$($_.FullName)\Nupkg-$XpandVersion.zip"
+if ($apiKey){
+    Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
+        $sb= "cmd /c $nugetExe push $_ $($apiKey) -source https://api.nuget.org/v3/index.json" 
+        $expr=Invoke-Expression $sb
+        Write-Host "$_::::$expr"
+    }
+    
+    Zip-Files
+    Get-ChildItem $basepath\Build\_package |foreach{
+        Copy-Item "$nupkgPath\nuget.zip" -Destination "$($_.FullName)\Nupkg-$XpandVersion.zip"
+    }
 }
 
 
