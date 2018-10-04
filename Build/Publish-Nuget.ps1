@@ -42,11 +42,10 @@ if ($apiKey){
         $expr=Invoke-Expression $sb
         Write-Host "$_::::$expr"
     }
-    
-    Zip-Files
-    Get-ChildItem $basepath\Build\_package |foreach{
-        Copy-Item "$nupkgPath\nuget.zip" -Destination "$($_.FullName)\Nupkg-$XpandVersion.zip"
-    }
+}
+Zip-Files
+Get-ChildItem $basepath\Build\_package |foreach{
+    Copy-Item "$nupkgPath\nuget.zip" -Destination "$($_.FullName)\Nupkg-$XpandVersion.zip"
 }
 
 
