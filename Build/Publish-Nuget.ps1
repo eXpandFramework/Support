@@ -1,6 +1,7 @@
 
 Param (
-    [string]$apiKey
+    [string]$apiKey,
+    [string]$source="https://api.nuget.org/v3/index.json"
 )
 . "$PSScriptRoot\zipfiles.ps1"
 $currentLocation=Get-Location
@@ -38,7 +39,7 @@ Get-ChildItem -Path $nuspecFiles -Filter *.nuspec | foreach{
 Set-Location $nupkgPath
 if ($apiKey){
     Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
-        $sb= "cmd /c $nugetExe push $_ $($apiKey) -source https://api.nuget.org/v3/index.json" 
+        $sb= "cmd /c $nugetExe push $_ $($apiKey) -source $source" 
         $expr=Invoke-Expression $sb
         Write-Host "$_::::$expr"
     }
