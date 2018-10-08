@@ -14,6 +14,8 @@ function Get-XpandVersion ($XpandPath) {
     }
 }
 $assemblyInfo="$XpandFolder\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
-(Get-Content $assemblyInfo).replace($(Get-XpandVersion $XpandFolder), $Version) | Set-Content $assemblyInfo
+$xpandVersion=(Get-XpandVersion $XpandFolder)
+Write-Host "xpcandVersion=$xpandVersion ,$Version"
+(Get-Content $assemblyInfo).replace($xpandVersion, $Version) | Set-Content $assemblyInfo
 
 
