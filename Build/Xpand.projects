@@ -11,7 +11,7 @@
 	<EasyTestProjects Include="
 					Xpand.EasyTest\Xpand.EasyTest\Xpand.EasyTest.csproj;
 					Xpand.EasyTest\Xpand.ExpressApp.EasyTest.WebAdapter\Xpand.ExpressApp.EasyTest.WebAdapter.csproj;
-					Xpand.EasyTest\Xpand.ExpressApp.EasyTest.WinAdapter\Xpand.ExpressApp.EasyTest.WinAdapter.csproj;"/>
+					Xpand.EasyTest\Xpand.ExpressApp.EasyTest.WinAdapter\Xpand.ExpressApp.EasyTest.WinAdapter.csproj;"  Condition="'$(Configuration)'=='EasyTest'"/>
     <HelperProjects Include="
 					Support\DistribNugetAssemblies\DistribNugetAssemblies.csproj;
 					Support\ToolboxCreator\Xpand.ToolboxCreator.csproj;
