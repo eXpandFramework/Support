@@ -52,6 +52,7 @@ namespace BuildHelper {
             var combine = Path.Combine(Path.GetDirectoryName(file)+"", @"Properties\licenses.licx");
             if  (File.Exists(combine))
                 File.Delete(combine);
+//            Console.WriteLine(document);
         }
 
         private void UpdateLanguageVersion(XDocument document, string file){
@@ -240,7 +241,16 @@ namespace BuildHelper {
 
                 if (_copyLocalReferences.Any(s => attribute != null && attribute.Value.StartsWith(s)))
                     UpdateElementValue(reference, "Private", "True", file, document);
-
+                var assemblyName = reference.Attribute("Include").Value;
+                if (!string.IsNullOrEmpty(Program.Options.DXHintPath) &&assemblyName.StartsWith("DevExpress.")&&!assemblyName.Contains(".DXCore.")) {
+                    var hintpath = $@"{Program.Options.DXHintPath}\{assemblyName}.dll";
+                    if (!File.Exists(hintpath)) {
+                        Console.WriteLine($"DXHintPathFiles:{string.Join(Environment.NewLine,Directory.GetFiles(Program.Options.DXHintPath))}");
+                        throw new FileNotFoundException($"Invalid path {hintpath}",hintpath);
+                    }
+                    Console.WriteLine($"Set DXHintPath for {assemblyName} to {hintpath}");
+                    UpdateElementValue(reference, "HintPath", hintpath, file, document);
+                }
                 if (reference.Attribute("Include").Value.StartsWith("Xpand.")) {
                     var path = Extensions.PathToRoot(directoryName,RootDir) + @"Xpand.DLL\" + attribute?.Value + ".dll";
                     UpdateElementValue(reference, "HintPath", path, file, document);

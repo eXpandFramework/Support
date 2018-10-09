@@ -7,7 +7,7 @@ using CommandLine;
 
 namespace BuildHelper {
     class Program {
-        static readonly HashSet<string> _excludedDirs = new HashSet<string> { "DXBuildGenerator", "Xpand.DesignExperience", "Report designer script editor","RECYCLE.BIN" };
+        static readonly HashSet<string> _excludedDirs = new HashSet<string> { "DXBuildGenerator", "Xpand.DesignExperience", "Report designer script editor","RECYCLE.BIN","Archived" };
         private static Options _options;
 
         static void Main(string[] args) {

@@ -8,6 +8,8 @@ namespace BuildHelper {
 
         [ParserState]
         public IParserState LastParserState { get; set; }
+        [Option("DXHintPath")]
+        public string DXHintPath { get; set; }
 
         [HelpOption]
         public string GetUsage() {
