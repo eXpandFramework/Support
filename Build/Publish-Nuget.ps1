@@ -4,6 +4,7 @@ Param (
     [string]$source="https://api.nuget.org/v3/index.json"
 )
 . "$PSScriptRoot\zipfiles.ps1"
+    
 $currentLocation=Get-Location
 $basePath=[System.IO.Path]::GetFullPath( "$PSScriptRoot\..\..\")
 Set-Location $basePath
@@ -33,6 +34,7 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
 Remove-Item "$nupkgPath" -Force -Recurse -ErrorAction sil 
 Get-ChildItem -Path $nuspecFiles -Filter *.nuspec | foreach{
     $sb= "cmd /c $nugetExe pack $($_.FullName) -OutputDirectory $nupkgPath -Version $XpandVersion -BasePath $basePath\build\temp\$_"
+    Write-Host $sb
     $expr=Invoke-Expression "$sb"
     Write-Host "$_::::$expr"
 }
@@ -40,12 +42,15 @@ Set-Location $nupkgPath
 if ($apiKey){
     Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
         $sb= "cmd /c $nugetExe push $_ $($apiKey) -source $source" 
+        Write-Host $sb
         $expr=Invoke-Expression $sb
         Write-Host "$_::::$expr"
     }
 }
 Zip-Files
-Get-ChildItem $basepath\Build\_package |foreach{
+$packageDir="$basepath\Build\_package"
+Write-Host "packageDir=$packageDir"
+Get-ChildItem $packageDir |foreach{
     Copy-Item "$nupkgPath\nuget.zip" -Destination "$($_.FullName)\Nupkg-$XpandVersion.zip"
 }
 

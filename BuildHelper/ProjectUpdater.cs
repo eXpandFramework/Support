@@ -242,14 +242,25 @@ namespace BuildHelper {
                 if (_copyLocalReferences.Any(s => attribute != null && attribute.Value.StartsWith(s)))
                     UpdateElementValue(reference, "Private", "True", file, document);
                 var assemblyName = reference.Attribute("Include").Value;
+                assemblyName = Path.GetFileNameWithoutExtension($"{assemblyName}.dll");
                 if (!string.IsNullOrEmpty(Program.Options.DXHintPath) &&assemblyName.StartsWith("DevExpress.")&&!assemblyName.Contains(".DXCore.")) {
                     var hintpath = $@"{Program.Options.DXHintPath}\{assemblyName}.dll";
                     if (!File.Exists(hintpath)) {
                         Console.WriteLine($"DXHintPathFiles:{string.Join(Environment.NewLine,Directory.GetFiles(Program.Options.DXHintPath))}");
                         throw new FileNotFoundException($"Invalid path {hintpath}",hintpath);
                     }
-                    Console.WriteLine($"Set DXHintPath for {assemblyName} to {hintpath}");
-                    UpdateElementValue(reference, "HintPath", hintpath, file, document);
+                    
+                    if (!Program.Options.AfterBuild) {
+                        Console.WriteLine($"Set DXHintPath for {assemblyName} to {hintpath}");
+                        UpdateElementValue(reference, "HintPath", hintpath, file, document);
+                    }
+                    else {
+                        Console.WriteLine($"Remove DXHintPath for {assemblyName} to {hintpath}");
+                        var elements = reference.Nodes().OfType<XElement>().Where(_ => _.Name.LocalName=="HintPath").ToArray();
+                        foreach (var element in elements) {
+                            element.Remove();
+                        }
+                    }
                 }
                 if (reference.Attribute("Include").Value.StartsWith("Xpand.")) {
                     var path = Extensions.PathToRoot(directoryName,RootDir) + @"Xpand.DLL\" + attribute?.Value + ".dll";
