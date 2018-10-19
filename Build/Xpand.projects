@@ -27,6 +27,7 @@
                     Xpand\Xpand.ExpressApp.Modules\Validation\Xpand.ExpressApp.Validation.csproj;
                     Xpand\Xpand.ExpressApp.Modules\Validation.Win\Xpand.ExpressApp.Validation.Win.csproj;
                     Xpand\Xpand.ExpressApp.Modules\Validation.Web\Xpand.ExpressApp.Validation.Web.csproj;
+                    Xpand\Xpand.ExpressApp.Modules\Dashboard\Xpand.ExpressApp.Dashboard.csproj;
                     Xpand\Xpand.ExpressApp.Modules\ExcelImporter\Xpand.ExpressApp.ExcelImporter.csproj;
                     Xpand\Xpand.ExpressApp.Modules\ExcelImporter.Win\Xpand.ExpressApp.ExcelImporter.Win.csproj;
                     Xpand\Xpand.ExpressApp.Modules\ExcelImporter.Web\Xpand.ExpressApp.ExcelImporter.Web.csproj;
@@ -39,7 +40,6 @@
                     Xpand\Xpand.ExpressApp.Modules\AdditionalViewControlsProvider.Win\Xpand.ExpressApp.AdditionalViewControlsProvider.Win.csproj;
                     Xpand\Xpand.ExpressApp.Modules\AuditTrail\Xpand.ExpressApp.AuditTrail.csproj;
                     Xpand\Xpand.ExpressApp.Modules\Chart.Win\Xpand.ExpressApp.Chart.Win.csproj;
-                    Xpand\Xpand.ExpressApp.Modules\Dashboard\Xpand.ExpressApp.Dashboard.csproj;
                     Xpand\Xpand.ExpressApp.Modules\Email\Xpand.ExpressApp.Email.csproj;
                     Xpand\Xpand.ExpressApp.Modules\FileAttachment\Xpand.ExpressApp.FileAttachment.csproj;
                     Xpand\Xpand.ExpressApp.Modules\FileAttachment.Web\Xpand.ExpressApp.FileAttachment.Web.csproj;
