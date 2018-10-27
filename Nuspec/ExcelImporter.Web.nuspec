@@ -15,10 +15,10 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="18.2.2.0" />
-      <dependency id="eXpandLib" version="18.2.2.0" />
-      <dependency id="eXpandSystemWeb" version="18.2.2.0" />
-      <dependency id="eXpandValidationWeb" version="18.2.2.0" />
+      <dependency id="eXpandExcelImporter" version="18.2.201.0" />
+      <dependency id="eXpandLib" version="18.2.201.0" />
+      <dependency id="eXpandSystemWeb" version="18.2.201.0" />
+      <dependency id="eXpandValidationWeb" version="18.2.201.0" />
     </dependencies>
   </metadata>
   <files>
