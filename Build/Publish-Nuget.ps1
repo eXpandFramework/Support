@@ -46,14 +46,14 @@ Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTim
 }
 
 Set-Location $nupkgPath
-if ($apiKey){
+if (!$apiKey){
     $packages=Get-ChildItem -Path $nupkgPath -Filter *.nupkg
     $paramObject = [pscustomobject] @{
         apiKey=$apiKey
         nugetExe=$nugetExe
         source=$source
     }   
-    Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
+    Invoke-InParallel -InputObject $packages -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
         & $parameter.nugetExe push $_.FullName $parameter.apiKey -source $parameter.source
     }
 }
