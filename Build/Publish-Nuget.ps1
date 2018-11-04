@@ -46,7 +46,7 @@ Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTim
 }
 
 Set-Location $nupkgPath
-if (!$apiKey){
+if ($apiKey){
     $packages=Get-ChildItem -Path $nupkgPath -Filter *.nupkg
     $paramObject = [pscustomobject] @{
         apiKey=$apiKey
