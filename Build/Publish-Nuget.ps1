@@ -47,11 +47,14 @@ Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTim
 
 Set-Location $nupkgPath
 if ($apiKey){
-    Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
-        $sb= "cmd /c $nugetExe push $_ $($apiKey) -source $source" 
-        Write-Host $sb
-        $expr=Invoke-Expression $sb
-        Write-Host "$_::::$expr"
+    $packages=Get-ChildItem -Path $nupkgPath -Filter *.nupkg
+    $paramObject = [pscustomobject] @{
+        apiKey=$apiKey
+        nugetExe=$nugetExe
+        source=$source
+    }   
+    Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
+        & $parameter.nugetExe push $_ $parameter.apiKey -source $parameter.source
     }
 }
 Zip-Files
