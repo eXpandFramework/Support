@@ -4,6 +4,7 @@ Param (
     [string]$source="https://api.nuget.org/v3/index.json"
 )
 . "$PSScriptRoot\zipfiles.ps1"
+. "$PSScriptRoot\Invoke-InParallel.ps1"
     
 $currentLocation=Get-Location
 $basePath=[System.IO.Path]::GetFullPath( "$PSScriptRoot\..\..\")
@@ -32,12 +33,18 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
 }
 #pack
 Remove-Item "$nupkgPath" -Force -Recurse -ErrorAction sil 
-Get-ChildItem -Path $nuspecFiles -Filter *.nuspec | foreach{
-    $sb= "cmd /c $nugetExe pack $($_.FullName) -OutputDirectory $nupkgPath -Version $XpandVersion -BasePath $basePath\build\temp\$_"
-    Write-Host $sb
-    $expr=Invoke-Expression "$sb"
-    Write-Host "$_::::$expr"
+$paramObject = [pscustomobject] @{
+    version=$XpandVersion
+    nugetBin=$nupkgPath
+    nugetExe=$nugetExe
+    basePath="$basePath\build\temp"
 }
+$nuspecFiles=Get-ChildItem -Path $nuspecFiles -Filter *.nuspec
+Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
+    $basePath= "$($parameter.basePath)\$_"
+    & $parameter.nugetExe pack $_.FullName -version $parameter.version -OutputDirectory $parameter.nugetBin -Basepath $basePath
+}
+
 Set-Location $nupkgPath
 if ($apiKey){
     Get-ChildItem -Path $nupkgPath -Filter *.nupkg | foreach{
