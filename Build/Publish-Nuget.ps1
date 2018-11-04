@@ -54,7 +54,7 @@ if ($apiKey){
         source=$source
     }   
     Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
-        & $parameter.nugetExe push $_ $parameter.apiKey -source $parameter.source
+        & $parameter.nugetExe push $_.FullName $parameter.apiKey -source $parameter.source
     }
 }
 Zip-Files
