@@ -22,6 +22,8 @@ $nugetExe=[System.IO.Path]::GetFullPath( $PSScriptRoot+"\..\Tool\nuget.exe")
 
 #copy to temp
 Get-ChildItem "$basePath/Xpand.DLL" -Include @('*.pdb','*.dll')| Copy-Item -Destination "$basePath\build\temp\$_" 
+#update agnostic package
+. .\UpdateNuspecContainers.ps1
 #modify nuspecs
 $supportFolder=$(Split-Path $PSScriptRoot)
 $XpandFolder=(Get-Item $supportFolder).Parent.FullName
@@ -31,6 +33,8 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
     Write-Host $filePath
     (Get-Content $filePath).replace('src="\Build', "src=`"$XpandFolder\Build") | Set-Content $filePath -Encoding UTF8
 }
+
+
 #pack
 Remove-Item "$nupkgPath" -Force -Recurse -ErrorAction sil 
 $paramObject = [pscustomobject] @{

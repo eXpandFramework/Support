@@ -13,10 +13,10 @@ namespace BuildHelper {
         private readonly string[] _projects;
         private readonly string[] _nuspecs;
         internal static readonly XNamespace XNamespace = XNamespace.Get("http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd");
-        readonly Dictionary<string,string> _packageMap=new  Dictionary<string, string>();
+        
         public NuspecUpdater(IDocumentHelper documentHelper, string rootDir, string version, string[] projects, string[] nuspecs)
             : base(documentHelper, rootDir){
-            _packageMap.Add("CSScriptLibrary","CS-Script");
+            
             _version = version;
             _projects = projects;
             _nuspecs = nuspecs;
@@ -24,7 +24,7 @@ namespace BuildHelper {
 
         private static IEnumerable<string> GetProjects(string file,string[] projects) {
             var nuspecFileNames = GetNuspecFiles(file);
-            projects = projects.Where(s => nuspecFileNames.Contains(AdjustName((Path.GetFileNameWithoutExtension(s))))).ToArray();
+            projects = projects.Where(s => nuspecFileNames.Where(_ =>!_.StartsWith("All") ).Contains(AdjustName((Path.GetFileNameWithoutExtension(s))))).ToArray();
             if (!projects.Any())
                 throw new NotImplementedException(file);
             return projects;
@@ -143,7 +143,7 @@ namespace BuildHelper {
                     else if (adjustName == "")
                         nuspec = FindNuspec("system");
                 }
-                return XDocument.Load(nuspec).Descendants(XNamespace + "id").First().Value;
+                return XDocument.Load(nuspec ?? throw new InvalidOperationException()).Descendants(XNamespace + "id").First().Value;
             }
             return id;
         }
