@@ -23,8 +23,10 @@ namespace BuildHelper {
         }
 
         private static IEnumerable<string> GetProjects(string file,string[] projects) {
+            if ($"{Path.GetFileName(file)}".StartsWith("All_"))
+                return Enumerable.Empty<string>();
             var nuspecFileNames = GetNuspecFiles(file);
-            projects = projects.Where(s => nuspecFileNames.Where(_ =>!_.StartsWith("All") ).Contains(AdjustName((Path.GetFileNameWithoutExtension(s))))).ToArray();
+            projects = projects.Where(s => nuspecFileNames.Contains(AdjustName((Path.GetFileNameWithoutExtension(s))))).ToArray();
             if (!projects.Any())
                 throw new NotImplementedException(file);
             return projects;
