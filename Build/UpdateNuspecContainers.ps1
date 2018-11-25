@@ -20,7 +20,7 @@ function UpdateNode($containerSpec,$specs,$nuspecFolder,$nodeName){
     }
     $container.Save($containerPath)
 }
-$nuspecFolder="$PSScriptRoot\..\Nuspecs\"
+$nuspecFolder="$PSScriptRoot\..\Nuspec\"
 $winSpecs=Get-ChildItem $nuspecFolder  -Filter "*.Win.nuspec"|Select-Object -ExpandProperty Name
 $webSpecs=Get-ChildItem $nuspecFolder  -Filter "*.Web.nuspec"|Select-Object -ExpandProperty Name
 $agnosticNuspec=Get-ChildItem $nuspecFolder -Filter "*.nuspec" |
