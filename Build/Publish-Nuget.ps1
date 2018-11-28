@@ -44,7 +44,7 @@ $paramObject = [pscustomobject] @{
     basePath="$basePath\build\temp"
 }
 $nuspecFiles=Get-ChildItem -Path $nuspecFiles -Filter *.nuspec
-Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
+Invoke-InParallel -InputObject $nuspecFiles -Parameter $paramObject -runspaceTimeout 120  -ScriptBlock {  
     $basePath= "$($parameter.basePath)\$_"
     & $parameter.nugetExe pack $_.FullName -version $parameter.version -OutputDirectory $parameter.nugetBin -Basepath $basePath
 }
