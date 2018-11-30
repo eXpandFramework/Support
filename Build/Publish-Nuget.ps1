@@ -57,7 +57,7 @@ if ($apiKey){
         nugetExe=$nugetExe
         source=$source
     }   
-    Invoke-InParallel -InputObject $packages -Parameter $paramObject -runspaceTimeout 30  -ScriptBlock {  
+    Invoke-InParallel -InputObject $packages -Parameter $paramObject -runspaceTimeout 120  -ScriptBlock {  
         & $parameter.nugetExe push $_.FullName $parameter.apiKey -source $parameter.source
     }
 }
