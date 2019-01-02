@@ -68,12 +68,9 @@
   -->
   <Target Name="AfterBuild">
     <ItemGroup>
-      <FFMPERG Include="..\..\Support\_third_party_assemblies\FFMPEG\*.*">
-      </FFMPERG>
+      <FFMPERG Include="..\..\Support\_third_party_assemblies\FFMPEG\*.*"></FFMPERG>
     </ItemGroup>
-    <Message Text="@(FFMPERG)">
-    </Message>
-    <Copy SourceFiles="@(FFMPERG)" DestinationFolder="$(OutputPath)">
-    </Copy>
+    <Message Text="@(FFMPERG)"></Message>
+    <Copy SourceFiles="@(FFMPERG)" DestinationFolder="$(OutputPath)"></Copy>
   </Target>
 </Project>

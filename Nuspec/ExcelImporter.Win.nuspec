@@ -15,10 +15,10 @@
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
       <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="18.2.300.0" />
-      <dependency id="eXpandLib" version="18.2.300.0" />
-      <dependency id="eXpandSystemWin" version="18.2.300.0" />
-      <dependency id="eXpandValidationWin" version="18.2.300.0" />
+      <dependency id="eXpandExcelImporter" version="18.2.302.0" />
+      <dependency id="eXpandLib" version="18.2.302.0" />
+      <dependency id="eXpandSystemWin" version="18.2.302.0" />
+      <dependency id="eXpandValidationWin" version="18.2.302.0" />
       <dependency id="System.Reactive" version="4.1.2" />
       <dependency id="System.ValueTuple" version="4.5.0" />
     </dependencies>
