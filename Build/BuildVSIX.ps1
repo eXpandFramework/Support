@@ -34,7 +34,7 @@ Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.vstempla
 #build VSIX
 $fileName="$XpandFolder\Xpand.Plugins\Xpand.VSIX\Xpand.VSIX.csproj"
 & "$XpandFolder\Support\Tool\nuget.exe" Restore $fileName -PackagesDirectory "$XpandFolder\Support\_third_party_assemblies\Packages"
-& "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false;OutputPath=$XpandFolder\Xpand.Dll" /v:m /WarnAsError
+& "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false;OutputPath=$XpandFolder\Xpand.Dll\Plugins" /v:m /WarnAsError
 
 
 

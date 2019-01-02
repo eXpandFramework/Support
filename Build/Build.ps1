@@ -13,7 +13,7 @@ properties {
     $dxPath=$null
 }
 
-Task Release  -depends  Clean,Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources,VSIX, Finalize,Installer
+Task Release  -depends  Clean,Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
 
 Task Init  {
     InvokeScript{
@@ -72,6 +72,11 @@ Task BuildExtras{
         "$root\Support\XpandTestExecutor\XpandTestExecutor.sln","$root\Support\XpandTestExecutor\RDClient\RDClient.csproj" |ForEach-Object{
             Start-Build $msbuild (GetBuildArgs $_)
         }
+    }
+}
+Task PackNuget{
+    InvokeScript{
+        & "$PSScriptRoot\PackNuget.ps1"  $throttle
     }
 }
 
@@ -178,6 +183,19 @@ Task CompileModules{
             write-host "Building $fileName..." -f "Blue"
             Start-Build $msbuild (GetBuildArgs "$_") 
         }
+
+        $helpers=($group.HelperProjects|GetProjects)+ ($group.VSAddons|GetProjects)
+        Write-Host "Compiling helper projects..." -f "Blue"
+        BuildProjects $helpers
+
+        Write-Host "Compiling Agnostic EasyTest projects..." -f "Blue"
+        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{!("$_".Contains("Win"))  -and !("$_".Contains("Web"))}) 
+        
+        Write-Host "Compiling Win EasyTest projects..." -f "Blue"
+        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Win")}) 
+        
+        Write-Host "Compiling Web EasyTest projects..." -f "Blue"
+        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Web")}) 
     }
 }
 task CompileDemos {
@@ -185,29 +203,19 @@ task CompileDemos {
         [xml]$xml = get-content "$PSScriptRoot\Xpand.projects"
         . $PSScriptRoot\Utils.ps1
         $group=$xml.Project.ItemGroup
-        $projects= ($group.HelperProjects|GetProjects)+
-        ($group.VSAddons|GetProjects)+($group.DemoSolutions|GetProjects)+($group.DemoTesterProjects|GetProjects)
+        $projects= ($group.DemoSolutions|GetProjects)+($group.DemoTesterProjects|GetProjects)
         
-        Write-Host "Compiling other projects..." -f "Blue"
+        Write-Host "Compiling agnostic demos..." -f "Blue"
         $otherProjects=$projects|Where-Object{!"$_".Contains("Web") -and !"$_".Contains("Win")}
         BuildProjects $otherProjects $true
         
-        Write-Host "Compiling Win projects..." -f "Blue"
+        Write-Host "Compiling Win demos..." -f "Blue"
         $winProjects=$projects|Where-Object{"$_".Contains("Win")}
         BuildProjects $winProjects $true
 
-        Write-Host "Compiling Web projects..." -f "Blue"
+        Write-Host "Compiling Web demos..." -f "Blue"
         $webProjects=$projects|Where-Object{"$_".Contains("Web")}
         BuildProjects $webProjects $true
-        
-        Write-Host "Compiling Agnostic EasyTest projects..." -f "Blue"
-        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{!("$_".Contains("Win"))  -and !("$_".Contains("Web"))}) $true
-        
-        Write-Host "Compiling Win EasyTest projects..." -f "Blue"
-        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Win")}) $true
-        
-        Write-Host "Compiling Web EasyTest projects..." -f "Blue"
-        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Web")}) $true
 
         & $root/Xpand.dll/BuildHelper.exe --afterbuild 
 

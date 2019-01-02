@@ -29,8 +29,8 @@ $agnosticNuspec=Get-ChildItem $nuspecFolder -Filter "*.nuspec" |
 
 
         
-"dependencies","files"|ForEach-Object {UpdateNode "All_Web" $webSpecs $nuspecFolder $_}
-"dependencies","files"|ForEach-Object {UpdateNode "All_Win" $winSpecs $nuspecFolder $_}
-"dependencies","files"|ForEach-Object {UpdateNode "All_Agnostic" $agnosticNuspec $nuspecFolder $_}
+"dependencies"|ForEach-Object {UpdateNode "All_Web" $webSpecs $nuspecFolder $_}
+"dependencies"|ForEach-Object {UpdateNode "All_Win" $winSpecs $nuspecFolder $_}
+"dependencies"|ForEach-Object {UpdateNode "All_Agnostic" $agnosticNuspec $nuspecFolder $_}
 
 
