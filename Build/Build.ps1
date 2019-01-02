@@ -11,6 +11,8 @@ properties {
     $throttle=1
     $packageSources=$null
     $dxPath=$null
+    $publishNugetFeed="https://api.nuget.org/v3/index.json"
+    $nugetApiKey=$null
 }
 
 Task Release  -depends  Clean,Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
@@ -163,6 +165,12 @@ Task EasyTest{
                 throw 
             }
         }
+    }
+}
+
+Task PublishNuget{
+    InvokeScript{
+        & "$PSScriptRoot\Publish-Nuget.ps1"  $nugetApiKey $publishNugetFeed
     }
 }
 

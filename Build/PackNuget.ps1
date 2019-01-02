@@ -40,7 +40,7 @@ $paramObject = [pscustomobject] @{
 }
 
 $nuspecFiles=Get-ChildItem -Path $nuspecFiles -Filter *.nuspec
-# & $paramObject.nugetExe pack $nuspecFiles.FullName -version $paramObject.version -OutputDirectory $paramObject.nugetBin 
+
 Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force
 $modules=(Get-Module XpandPosh).Path
 $sb={

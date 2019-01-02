@@ -5,10 +5,11 @@ param(
     [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages")   ,
     [string[]]$msbuildArgs=@("/p:Configuration=$configuration","/WarnAsError","/v:m"),
     [int]$throttle=(Get-WmiObject -class Win32_ComputerSystem).numberoflogicalprocessors,
-    [string[]]$taskList=@("Release")
+    [string[]]$taskList=@("Release"),
+    [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
+    [string]$nugetApiKey=$null
 )
-Get-PackageProvider -Name "Nuget" -Force 
-
+Get-PackageProvider -Name "Nuget" -Force
 
 Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force 
 if (!$version){
@@ -34,4 +35,6 @@ Invoke-psake  "$PSScriptRoot\Build.ps1" -properties @{
     "msbuildArgs"=$msbuildArgs;
     "throttle"=$throttle;
     "packageSources"=$packageSources;
+    "publishNugetFeed"=$publishNugetFeed;
+    "nugetApiKey"=$nugetApiKey;
 } -taskList $taskList
