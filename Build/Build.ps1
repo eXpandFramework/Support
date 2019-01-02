@@ -123,7 +123,7 @@ Task EasyTest{
             Remove-Item "$PSScriptRoot\easytests.txt" -Force
         }
         
-        get-childitem "$root\Demos\" -Filter "*.ets" -Recurse|Select-Object -ExpandProperty FullName |Set-Content  "$xpandDll\easytests.txt"
+        get-childitem "$root\Demos\" -Filter "*.ets" -Recurse|Select-Object -First 1 -ExpandProperty FullName |Set-Content  "$xpandDll\easytests.txt"
         $reqs="$xpandDll\Xpand.utils.dll;$xpandDll\Xpand.ExpressApp.EasyTest.WinAdapter.dll;$xpandDll\Xpand.ExpressApp.EasyTest.WebAdapter.dll;$xpandDll\Xpand.EasyTest.dll;$xpandDll\Fasterflect.dll;$xpandDll\Aforge*.dll;"+
         "$xpanddll\Xpand.ExpressApp.EasyTest.WinAdapter.pdb;$xpanddll\Xpand.ExpressApp.EasyTest.WebAdapter.pdb;$xpanddll\Xpand.EasyTest.pdb;$xpanddll\Xpand.utils.pdb;"+
         "$xpandDll\psexec.exe;$xpandDll\CommandLine.dll;$xpandDll\executorwrapper.exe;$xpandDll\RDClient.exe;$(Get-DXPath $version)\Tools\eXpressAppFramework\EasyTest\TestExecutor.v$(Get-DXVersion $version).exe;$(Get-DXPath $version)\Tools\eXpressAppFramework\EasyTest\TestExecutor.v$(Get-DXVersion $version).exe.config;$thirdPartPath\AxInterop.MSTSCLib.dll;$thirdPartPath\Interop.MSTSCLib.dll;"
@@ -190,36 +190,40 @@ task CompileDemos {
         
         Write-Host "Compiling other projects..." -f "Blue"
         $otherProjects=$projects|Where-Object{!"$_".Contains("Web") -and !"$_".Contains("Win")}
-        BuildProjects $otherProjects
+        BuildProjects $otherProjects $true
         
         Write-Host "Compiling Win projects..." -f "Blue"
         $winProjects=$projects|Where-Object{"$_".Contains("Win")}
-        BuildProjects $winProjects
+        BuildProjects $winProjects $true
 
         Write-Host "Compiling Web projects..." -f "Blue"
         $webProjects=$projects|Where-Object{"$_".Contains("Web")}
-        BuildProjects $webProjects
+        BuildProjects $webProjects $true
         
         Write-Host "Compiling Agnostic EasyTest projects..." -f "Blue"
-        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{!("$_".Contains("Win"))  -and !("$_".Contains("Web"))})
+        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{!("$_".Contains("Win"))  -and !("$_".Contains("Web"))}) $true
         
         Write-Host "Compiling Win EasyTest projects..." -f "Blue"
-        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Win")})
+        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Win")}) $true
         
         Write-Host "Compiling Web EasyTest projects..." -f "Blue"
-        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Web")})
+        BuildProjects (($group.EasyTestProjects|GetProjects)|Where-Object{"$_".Contains("Web")}) $true
 
         & $root/Xpand.dll/BuildHelper.exe --afterbuild 
+
     }
 
 }
 
-function BuildProjects($projects ){
+function BuildProjects($projects,$clean ){
     $modules=(Get-Module XpandPosh).Path
     $sb={
         param($parameter)
         Push-Location $_.DirectoryName
         $result=New-Command $_ $parameter.msbuild """$_"" $($parameter.msbuildArgs)"
+        if ($parameter.clean){
+            New-Command $_ $parameter.msbuild """$_"" $($parameter.msbuildArgs) /t:Clean"
+        }
         [PSCustomObject]@{
             result = $result
             project=$_
@@ -229,11 +233,12 @@ function BuildProjects($projects ){
         location = $PSScriptRoot
         msbuild=$msbuild
         msbuildArgs=[system.string]::Join(" ",$msbuildArgs)
+        clean=$clean
     }
     $projects|start-rsjob  $sb -argumentlist $paramObject -Throttle $throttle -ModulesToImport $modules -FunctionFilesToImport "$PSScriptRoot\Build.ps1"  |Wait-RSJob -ShowProgress |ForEach-Object{
         $j=Get-RSJob $_  |Receive-RSJob 
         $j.result.stdout
-        $j.result.project
+        $j.result.commandTitle
         if ($j.result.ExitCode){
             throw "Fail to build $($j.result.CommandTitle)`n`r$($j.result.stdout)" 
         }
@@ -251,11 +256,11 @@ function GetBuildArgs($projectPath){
 task Clean -precondition {return $clean} {
     exec {
         Set-Location $root
-        if (Test-path .\Build){
-            Remove-Item .\Build -Recurse -Force
+        if (Test-path $root\Build){
+            Remove-Item $root\Build -Recurse -Force
         }
-        if (Test-path .\Xpand.dll){
-            Remove-Item .\Xpand.dll -Recurse -Force
+        if (Test-path $root\Xpand.dll){
+            Remove-Item $root\Xpand.dll -Recurse -Force
         }
         Clear-ProjectDirectories
     }

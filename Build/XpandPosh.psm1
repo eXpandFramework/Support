@@ -180,12 +180,7 @@ function CleanProjectCore() {
     Get-ChildItem -Recurse | 
         Where-Object { $_.PSIsContainer } | 
         Where-Object { $_.Name -eq 'bin' -or $_.Name -eq 'obj' -or $_.Name -eq '.vs' -or $_.Name.StartsWith('_ReSharper')} | foreach{
-            try {
-                (Get-Item $_.FullName).Delete($true)
-            }
-            catch {
-                $_
-            }
+            (Get-Item $_.FullName).Delete($true)
         }
         
         
