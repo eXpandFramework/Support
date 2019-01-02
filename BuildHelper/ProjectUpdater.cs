@@ -38,7 +38,6 @@ namespace BuildHelper {
             }
             UpdateProjectReferences(document,file);
             UpdateReferences(document, directoryName, file);
-            UpdateNugetTargets(document, file);
             UpdateConfig(file);
             UpdateLanguageVersion(document,file);
             if (SyncConfigurations(document))
@@ -79,28 +78,6 @@ namespace BuildHelper {
             }
             if (xpandProjectReferences.Any())
                 DocumentHelper.Save(document, file);
-        }
-
-        private void UpdateNugetTargets(XDocument document, string file){
-            var nugetTargetsPath = Extensions.PathToRoot(Path.GetDirectoryName(file),RootDir) + @"Support\Build\Nuget.Targets";
-            if (document.Descendants(XNamespace + "Import").All(element => !NugetPathMatch(element, nugetTargetsPath))) {
-                var elements = document.Descendants(XNamespace + "Import").Where(xelement => xelement.Attribute("Project").Value.ToLowerInvariant().EndsWith("nuget.targets")).ToArray();
-                for (int index = elements.Length - 1; index >= 0; index--) {
-                    var xElement = elements[index];
-                    xElement.Remove();
-                }
-                Debug.Assert(document.Root != null, "document.Root != null");
-                var element = new XElement(XNamespace + "Import");
-                element.SetAttributeValue("Project", nugetTargetsPath);
-                element.SetAttributeValue("Condition",$"Exists('{nugetTargetsPath}')");
-                document.Root.Add(element);
-                DocumentHelper.Save(document, file);
-            }
-        }
-
-        private static bool NugetPathMatch(XElement element, string nugetTargetsPath){
-            return string.Equals(element.Attribute("Project")?.Value, nugetTargetsPath,
-                       StringComparison.InvariantCultureIgnoreCase)&& element.Attributes("Condition").Any();
         }
 
         private bool SyncConfigurations(XDocument document){

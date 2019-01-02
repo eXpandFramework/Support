@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <WarnOrErrorOnTargetArchitectureMismatch>false</WarnOrErrorOnTargetArchitectureMismatch>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{C4BD7AC1-0E92-409B-998C-6F20BE54E5A6}</ProjectGuid>
@@ -14,7 +15,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <WarnOrErrorOnTargetArchitectureMismatch>false</WarnOrErrorOnTargetArchitectureMismatch>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,9 +26,11 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>#MSB3270</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <WarnOrErrorOnTargetArchitectureMismatch>false</WarnOrErrorOnTargetArchitectureMismatch>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Xpand.DLL\</OutputPath>
@@ -35,6 +39,7 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
+    <NoWarn>MSB3270</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AForge.Video.FFMPEG, Version=2.2.5.0, Culture=neutral, PublicKeyToken=03563089b1be05dd, processorArchitecture=AMD64">
@@ -68,5 +73,4 @@
     <Message Text="@(FFMPERG)"></Message>
     <Copy SourceFiles="@(FFMPERG)" DestinationFolder="$(OutputPath)"></Copy>
   </Target>
-  <Import Project="..\..\Support\Build\Nuget.Targets" Condition="Exists('..\..\Support\Build\Nuget.Targets')" />
 </Project>

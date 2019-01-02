@@ -15,7 +15,6 @@
     <HelperProjects Include="
 					Support\DistribNugetAssemblies\DistribNugetAssemblies.csproj;
 					Support\ToolboxCreator\Xpand.ToolboxCreator.csproj;
-					Support\VideoBuilder\VideoBuilder.csproj;
 					Support\GacInstaller\GacInstaller.csproj"/>
     <VSAddons Include="
                     Xpand.Plugins\Xpand.ExpressApp.ModelEditor\Xpand.ExpressApp.ModelEditor.csproj;"/>

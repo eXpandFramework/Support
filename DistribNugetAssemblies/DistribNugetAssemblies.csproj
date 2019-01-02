@@ -60,5 +60,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="..\..\Support\Build\Nuget.Targets" Condition="Exists('..\..\Support\Build\Nuget.Targets')" />
 </Project>
