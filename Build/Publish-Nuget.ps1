@@ -23,7 +23,7 @@ $nugetExe=[System.IO.Path]::GetFullPath( $PSScriptRoot+"\..\Tool\nuget.exe")
 #copy to temp
 Get-ChildItem "$basePath/Xpand.DLL" -Include @('*.pdb','*.dll')| Copy-Item -Destination "$basePath\build\temp\$_" 
 #update agnostic package
-. "$PSScriptRoot\UpdateNuspecContainers.ps1"
+& "$PSScriptRoot\UpdateNuspecContainers.ps1"
 #modify nuspecs
 $supportFolder=$(Split-Path $PSScriptRoot)
 $XpandFolder=(Get-Item $supportFolder).Parent.FullName

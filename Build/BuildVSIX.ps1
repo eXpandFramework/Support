@@ -1,21 +1,22 @@
 Param (
-    [string]$XpandFolder=(Get-XpandPath),
+    [string]$XpandFolder=(Get-Item "$PSScriptRoot\..\..").FullName,
     [string]$msbuild="C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\msbuild.exe",
     [string]$DXVersion="0.0.0.0"
 )
-. "$PSScriptRoot\Utils.ps1"
-
+$ErrorActionPreference = "Stop"
+Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force
 if ($DXVersion -eq "0.0.0.0"){
-    $DXVersion=Get-Version -path "$PSScriptRoot\..\..\"
+    $DXVersion=Get-VersionFromFile "$PSScriptRoot\..\..\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 }
+
 #update version in templates
 $version=New-Object System.Version ($DXVersion)
-Write-Host "version=$version"
-Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.zip" -Recurse |foreach{
+
+Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.zip" -Recurse |ForEach-Object{
     $tempPath="$(Split-Path $_ -Parent)\temp"
     Expand-Archive -Force $_ -DestinationPath $tempPath
     
-    $vsTemplate=(Get-ChildItem $tempPath -Filter *.vstemplate | Select -First 1).FullName
+    $vsTemplate=(Get-ChildItem $tempPath -Filter *.vstemplate | Select-Object -First 1).FullName
     $content=Get-Content $vsTemplate
     $content = $content -ireplace 'eXpandFramework v([^ ]*)', "eXpandFramework v$($version.Major).$($version.Minor)"
     $content = $content -ireplace 'Xpand.VSIX, Version=([^,]*)', "Xpand.VSIX, Version=$($version.ToString())"
@@ -24,26 +25,16 @@ Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.zip" -Re
     Remove-Item $tempPath -Recurse -Force
 }
 
-Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.vstemplate" -Recurse|foreach{
+Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.vstemplate" -Recurse|ForEach-Object{
     $content=Get-Content $_
     $content = $content -ireplace "TemplateWizard.v([^,]*),", "TemplateWizard.v$($version.Major).$($version.Minor),"
     Set-Content $_ $content
 }
 
-
-$content=Get-Content $vsTemplate
-$content = $content -ireplace 'eXpandFramework v([^ ]*)', "eXpandFramework v$($version.Major).$($version.Minor)"
-
-#restore nuget
-$fileName="$XpandFolder\Xpand.Plugins\Xpand.VSIX\Xpand.VSIX.csproj"
-$nugetExe="$XpandFolder\Support\Tool\nuget.exe"
-$expression="$nugetExe restore $fileName"
-Write-Host $expression
-Invoke-Expression $expression
-
-
 #build VSIX
-& "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false" 
+$fileName="$XpandFolder\Xpand.Plugins\Xpand.VSIX\Xpand.VSIX.csproj"
+& "$XpandFolder\Support\Tool\nuget.exe" Restore $fileName -PackagesDirectory "$XpandFolder\Support\_third_party_assemblies\Packages"
+& "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false;OutputPath=$XpandFolder\Xpand.Dll" /v:m /WarnAsError
 
 
 
