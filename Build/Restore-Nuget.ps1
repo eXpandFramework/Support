@@ -16,10 +16,6 @@ $paramObject = [pscustomobject] @{
 
 & "$PSScriptRoot\MigrateDxReference.ps1" -version $version -packageSources $packageSources
 get-childitem "$PSScriptRoot\..\.." "packages.config" -Recurse|ForEach-Object{
-    # $content=Get-Content $_.FullName -Raw
-    # $content=$content.Replace("Id=","id=").Replace("Version=","version=").Replace("TargetFramework=","targetFramework=").Replace("<Package","<package")
-    # Set-Content $_.FullName $content
-    
     $xml=Get-Content $_.FullName 
     $xml.packages.Package.Id|Group-Object |where{$_.Count -gt 1}|ForEach-Object{
         $_.Group|select -skip 1 | ForEach-Object{

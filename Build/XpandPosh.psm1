@@ -27,9 +27,14 @@ function Get-RelativePath($fileName,$targetPath) {
     return $path
 }
 
-function Get-DXVersion($version){
+function Get-DXVersion($version,$build){
     $v=New-Object System.Version $version
-    "$($v.Major).$($v.Minor)"
+    if (!$build){
+        "$($v.Major).$($v.Minor)"
+    }    
+    else{
+        "$($v.Major).$($v.Minor).$($v.Build.ToString().Substring(0,1))"
+    }
 }
 function Write-HostHashtable($params){
     foreach ($key in $params.keys) {

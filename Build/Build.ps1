@@ -95,7 +95,7 @@ Task Version{
 }
 
 Task RestoreNuget{
-    InvokeScript {
+    InvokeScript -maxRetries 3 {
         & "$PSScriptRoot\Restore-Nuget.ps1" -packageSources $packageSources -version $version -throttle $throttle
     }   
 }
@@ -286,9 +286,9 @@ task ? -Description "Helper to display task info" {
     Write-Documentation
 }
 
-function InvokeScript($sb){
+function InvokeScript($sb,$maxRetries=0){
     try {
-        exec $sb
+        exec $sb -maxRetries $maxRetries
     }
     catch {
         Write-Warning $_.Exception

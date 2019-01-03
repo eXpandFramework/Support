@@ -15,8 +15,8 @@
     <projectUrl>http://www.expandframework.com/#IO</projectUrl>
     <dependencies>
       <dependency id="DotNetZip" version="1.11.0" />
-      <dependency id="eXpandIO" version="18.2.302.0" />
-      <dependency id="eXpandLib" version="18.2.302.0" />
+      <dependency id="eXpandIO" version="18.2.401.0" />
+      <dependency id="eXpandLib" version="18.2.401.0" />
     </dependencies>
   </metadata>
   <files>

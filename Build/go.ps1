@@ -9,7 +9,7 @@ param(
     [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
     [string]$nugetApiKey=$null
 )
-Get-PackageProvider -Name "Nuget" -Force
+Get-PackageProvider -Name "Nuget" -Force|Out-null
 
 Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force 
 if (!$version){
