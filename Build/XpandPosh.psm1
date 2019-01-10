@@ -1,3 +1,27 @@
+function Update-AssemblyInfoBuild($path){
+    if (!$path){
+        $path= "."
+    }
+    Get-ChildItem -path $path -filter "*AssemblyInfo.cs" -Recurse|ForEach-Object{
+        $c=Get-Content $_.FullName
+        $r=new-object System.Text.RegularExpressions.Regex("[\d]{2}\.[\d]{1}\.[\d]*(\.[\d]*)?")
+        $version=New-Object System.Version ($r.Match($c).Value)
+        $newBuild=$version.Build+1
+        $newVersion=new-object System.Version ($version.Major,$version.Minor,$newBuild,0)
+        $result = $c -creplace 'Version\("([^"]*)', "Version(""$newVersion"
+        Set-Content $_.FullName $result
+    }
+}
+function Update-AssemblyInfoVersion([parameter(mandatory)]$version,$path){
+    if ($path -eq $null){
+        $path= "."
+    }
+    Get-ChildItem -path $path -filter "*AssemblyInfo.cs" -Recurse|ForEach-Object{
+        $c=Get-Content $_.FullName
+        $result = $c -creplace 'Version\("([^"]*)', "Version(""$version"
+        Set-Content $_.FullName $result
+    }
+}
 
 function Get-XpandVersion ($XpandPath) { 
     $assemblyInfo="$XpandPath\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
@@ -336,3 +360,5 @@ Export-ModuleMember -function Get-DXVersion
 Export-ModuleMember -function Get-RelativePath
 Export-ModuleMember -function Show-Colors
 Export-ModuleMember -function Get-XpandVersion
+Export-ModuleMember -function Update-AssemblyInfoVersion
+Export-ModuleMember -function Update-AssemblyInfoBuild
