@@ -3,7 +3,7 @@ Param (
     [string]$DXVersion="0.0.0.0"
 )
 . "$PSScriptRoot\Utils.ps1"
-Import-module "$PSScriptRoot\XpandPosh.psm1" -force
+& "$PSScriptRoot\ImportXpandPosh.ps1"
 Push-Location "$XpandFolder"
 if ($DXVersion -eq "0.0.0.0"){
     $DXVersion=Get-XpandVersion "$XpandFolder"

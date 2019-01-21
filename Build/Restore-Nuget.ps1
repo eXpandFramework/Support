@@ -3,7 +3,6 @@ param(
     [int]$throttle=10,
     [string]$version="18.2.300.1"
 )
-$nugetExe=$PSScriptRoot+"\..\Tool\nuget.exe"
 
 [xml]$xml =Get-Content "$PSScriptRoot\Xpand.projects"
 $group=$xml.Project.ItemGroup
@@ -42,14 +41,16 @@ $sb={
     Push-Location $parameter.location
     $packagesDirectory= "$($parameter.location)\..\_third_party_assemblies\Packages"
     $params="restore ""$_""  -PackagesDirectory $packagesDirectory -source ""$($parameter.packageSources)"""
-    $result=New-Command $_ $parameter.nugetExe $params $parameter.location
+    $result=invoke-retry{
+        New-Command $_ $parameter.nugetExe $params $parameter.location
+    }
     [PSCustomObject]@{
         result = $result
         project=$_
         params=$params
     } 
 }
-Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force 
+& "$PSScriptRoot\ImportXpandPosh.ps1" 
 $modules=(Get-Module XpandPosh).Path
 
 $projects|start-rsjob  $sb -argumentlist $paramObject -Throttle $throttle -ModulesToImport $modules |Wait-RSJob -ShowProgress -Timeout 180 |ForEach-Object{

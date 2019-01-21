@@ -15,8 +15,7 @@ function UpdateNode($containerSpec,$specs,$nuspecFolder,$nodeName){
         $temp=[xml]$_
         $node=$container.ImportNode($temp.FirstChild,$true)
         $node.RemoveAttribute("xmlns")
-        write-host $node.outerxml
-        $noeToUpdate.AppendChild($node)
+        $noeToUpdate.AppendChild($node)|out-null
     }
     $container.Save($containerPath)
 }

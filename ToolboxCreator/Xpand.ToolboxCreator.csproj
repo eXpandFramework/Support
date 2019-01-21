@@ -44,11 +44,11 @@
   <ItemGroup>
     <Reference Include="DevExpress.Data.v18.2">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\_third_party_assemblies\Packages\DevExpress.Data.18.2.4\lib\net452\DevExpress.Data.v18.2.dll</HintPath>
+      <HintPath>..\..\Xpand.Dll\DevExpress.Data.v18.2.dll</HintPath>
     </Reference>
     <Reference Include="DevExpress.ExpressApp.v18.2">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\_third_party_assemblies\Packages\DevExpress.ExpressApp.18.2.4\lib\net452\DevExpress.ExpressApp.v18.2.dll</HintPath>
+      <HintPath>..\..\Xpand.Dll\DevExpress.ExpressApp.v18.2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

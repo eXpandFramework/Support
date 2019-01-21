@@ -1,7 +1,7 @@
 param(
     $version="1.1.1.1"
 )
-Import-Module $PSScriptRoot\xpandposh.psm1 -Force
+& "$PSScriptRoot\ImportXpandPosh.ps1"
 Disable-ExecutionPolicy
 $root=(get-item "$PSScriptRoot\..\..\").FullName
 $pdbPath="$root\Xpand.DLL\pdb"

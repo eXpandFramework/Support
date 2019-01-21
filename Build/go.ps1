@@ -11,7 +11,7 @@ param(
 )
 Get-PackageProvider -Name "Nuget" -Force|Out-null
 
-Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force 
+& "$PSScriptRoot\ImportXpandPosh.ps1"
 if (!$version){
     $version=Get-VersionFromFile "$PSScriptRoot\..\..\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 }

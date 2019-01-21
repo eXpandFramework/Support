@@ -33,7 +33,6 @@ Task Init  {
         $r.stdout
         Start-Build $msbuild (GetBuildArgs "$root\Support\BuildHelper\BuildHelper.sln")
         & $root/Xpand.dll/BuildHelper.exe 
-    
         
         Get-ChildItem "$root" "*.csproj" -Recurse|ForEach-Object {
             [xml]$xml=Get-Content $_.FullName
@@ -49,7 +48,6 @@ Task Init  {
                     $_.ParentNode.RemoveChild($_)|Out-Null
                 }
             }
-            
             $xml.Save($_.FullName)
         }    
     }
@@ -95,7 +93,7 @@ Task Version{
 }
 
 Task RestoreNuget{
-    InvokeScript -maxRetries 3 {
+    InvokeScript {
         & "$PSScriptRoot\Restore-Nuget.ps1" -packageSources $packageSources -version $version -throttle $throttle
     }   
 }

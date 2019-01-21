@@ -66,7 +66,7 @@ namespace BuildHelper {
         }
 
         private void UpdateProjectReferences(XDocument document, string file){
-            var xpandProjectReferences = document.Descendants().Where(element => element.Name.LocalName == "ProjectReference" && Path.GetFileName(element.Attribute("Include")?.Value).StartsWith("Xpand.")).ToArray();
+            var xpandProjectReferences = document.Descendants().Where(element => element.Name.LocalName == "ProjectReference" && Path.GetFileName(element.Attribute("Include")?.Value).StartsWith("Xpand.")&&!Path.GetFileName(element.Attribute("Include")?.Value).StartsWith("Xpand.XAF.")).ToArray();
             var references = document.Descendants().Where(xElement => xElement.Name.LocalName=="Reference").Select(element => element.Parent).First();
             foreach (var element in xpandProjectReferences){
                 var referenceElement = new XElement(XNamespace + "Reference");
@@ -239,7 +239,7 @@ namespace BuildHelper {
                         }
                     }
                 }
-                if (reference.Attribute("Include").Value.StartsWith("Xpand.")) {
+                if (reference.Attribute("Include").Value.StartsWith("Xpand.")&&!reference.Attribute("Include").Value.StartsWith("Xpand.XAF.")) {
                     var path = Extensions.PathToRoot(directoryName,RootDir) + @"Xpand.DLL\" + attribute?.Value + ".dll";
                     UpdateElementValue(reference, "HintPath", path, file, document);
                 }

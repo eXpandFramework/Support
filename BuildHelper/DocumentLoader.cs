@@ -17,7 +17,7 @@ namespace BuildHelper {
             Environment.CurrentDirectory = Path.GetDirectoryName(file) + "";
             XDocument document;
             using (var fileStream = File.OpenRead(file)) {
-                document = XDocument.Load(fileStream);
+                document = XDocument.Load(fileStream,LoadOptions.PreserveWhitespace);
             }
             return document;
         }
@@ -27,7 +27,7 @@ namespace BuildHelper {
         public IList<string> SavedFiles => _savedFiles;
 
         public void Save(XDocument document, string file) {
-            document.Save(file, SaveOptions.None);
+            document.Save(file, SaveOptions.DisableFormatting);
             _savedFiles.Add(file);
         }
 

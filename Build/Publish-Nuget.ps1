@@ -9,8 +9,7 @@ Set-Location $basePath
 $nuspecFiles= "$basePath/Support/Nuspec"
 $assemblyInfo="$basePath\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 $matches = Get-Content $assemblyInfo -ErrorAction Stop | Select-String 'public const string Version = \"([^\"]*)'
-# $XpandVersion=$matches[0].Matches.Groups[1].Value 
-$XpandVersion="18.2.301.35" 
+
 $nupkgPath= "$PSScriptRoot\..\..\Build\Nuget"
 $nupkgPath=[System.IO.Path]::GetFullPath($nupkgPath)
 $nugetExe=[System.IO.Path]::GetFullPath( $PSScriptRoot+"\..\Tool\nuget.exe")
@@ -22,7 +21,7 @@ $paramObject = [pscustomobject] @{
     nugetExe=$nugetExe
     source=$source
 }
-Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force
+# Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force
 $modules=(Get-Module XpandPosh).Path
 $sb={
     param($parameter)

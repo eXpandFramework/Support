@@ -6,7 +6,7 @@ Param (
 )
 
 
-Import-Module "$PSScriptRoot\XpandPosh.psm1" -force
+& "$PSScriptRoot\ImportXpandPosh.ps1" 
 set-location $root
 Get-ChildItem *.csproj -recurse|Where{
     $directoryName=(Get-Item $_).DirectoryName

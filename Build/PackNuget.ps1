@@ -1,8 +1,8 @@
 param(
-    $throttle=10
+
 )
     
-$currentLocation=Get-Location
+
 $basePath=[System.IO.Path]::GetFullPath( "$PSScriptRoot\..\..\")
 Set-Location $basePath
 $nuspecFiles= "$basePath/Support/Nuspec"
@@ -16,11 +16,10 @@ Remove-Item "$basePath\build\temp" -Force -Recurse -ErrorAction SilentlyContinue
 New-Item "$basePath\build\temp" -ItemType Directory -ErrorAction SilentlyContinue
 $nugetExe=[System.IO.Path]::GetFullPath( $PSScriptRoot+"\..\Tool\nuget.exe")
 
-#copy to temp
 Get-ChildItem "$basePath/Xpand.DLL" -Include @('*.pdb','*.dll')| Copy-Item -Destination "$basePath\build\temp\$_" 
-#update agnostic package
+
 & "$PSScriptRoot\UpdateNuspecContainers.ps1"
-#modify nuspecs
+
 $supportFolder=$(Split-Path $PSScriptRoot)
 $XpandFolder=(Get-Item $supportFolder).Parent.FullName
 $nuspecFolder="$supportFolder\Nuspec"
@@ -29,41 +28,36 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
     (Get-Content $filePath).replace('src="\Build', "src=`"$XpandFolder\Build") | Set-Content $filePath -Encoding UTF8
 }
 
-
-#pack
 Remove-Item "$nupkgPath" -Force -Recurse 
-$paramObject = [pscustomobject] @{
-    version=$XpandVersion
-    nugetBin=$nupkgPath
-    nugetExe=$nugetExe
-    basePath=$basePath
-}
 
 $nuspecFiles=Get-ChildItem -Path $nuspecFiles -Filter *.nuspec
 
-Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force
-$modules=(Get-Module XpandPosh).Path
-$sb={
-    param($parameter)
+& "$PSScriptRoot\ImportXpandPosh.ps1"
+
+workflow Invoke-Pack {
+    param ($psObj )
+    $complete = 0
+    Foreach -parallel ($nuget in $psObj.Nuspecs) { 
+        InlineScript {
+            Write-Output "Packing $($Using:nuget)"
+            & $Using:psObj.NugetExe Pack $Using:nuget -version $Using:psObj.Version -OutputDirectory $Using:psObj.OutputDirectory
+        } 
+        $Workflow:complete = $Workflow:complete + 1 
+        [int]$percentComplete = ($Workflow:complete * 100) / $Workflow:psObj.Nuspecs.Count
+        Write-Progress -Id 1 -Activity "Packing" -PercentComplete $percentComplete -Status "$percentComplete% :$($nuget.Name)"
+    }
+    Write-Progress -Id 1 -Status "Ready" -Activity "Packing" -Completed
     
-    $params="pack $($_.FullName) -version $($parameter.version) -OutputDirectory $($parameter.nugetBin)"
-    $result=New-Command $_ $parameter.nugetExe $params $parameter.location
-    [PSCustomObject]@{
-        result = $result
-        project=$_
-    } 
 }
-$nuspecFiles|start-rsjob  $sb -argumentlist $paramObject -Throttle $throttle -ModulesToImport $modules   |Wait-RSJob -ShowProgress |ForEach-Object{
-    $j=Get-RSJob $_  |Receive-RSJob 
-    $j.result.stdout
-    $j.result.commandTitle
-    if ($j.result.ExitCode){
-        throw "Fail to build $($j.result.CommandTitle)`n`r$($j.result.stderr)" 
-    }
-    else{
-        Write-Host "Project $($j.result.commandTitle) build succefully" -f "Green"
-    }
+
+$psObj = [PSCustomObject]@{
+    OutputDirectory = $nupkgPath
+    NugetExe        = (Get-Item $nugetExe).FullName
+    Nuspecs          = $nuspecFiles|Select-Object -ExpandProperty FullName 
+    version=$XpandVersion
 }
+Invoke-Pack $psObj
+
 Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
     $filePath="$nuspecFolder\$_"
     (Get-Content $filePath).replace("src=`"$XpandFolder\Build",'src="\Build') | Set-Content $filePath -Encoding UTF8
