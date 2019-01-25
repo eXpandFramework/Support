@@ -4,36 +4,38 @@ Param (
     [string]$DXVersion="0.0.0.0"
 )
 $ErrorActionPreference = "Stop"
-& "$PSScriptRoot\ImportXpandPosh.ps1" 
+
 if ($DXVersion -eq "0.0.0.0"){
     $DXVersion=Get-VersionFromFile "$PSScriptRoot\..\..\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 }
 
 #update version in templates
 $version=New-Object System.Version ($DXVersion)
+$projectTemplates="$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates"
+$tempPath="$projectTemplates\temp"
 
-Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.zip" -Recurse |ForEach-Object{
-    $tempPath="$(Split-Path $_ -Parent)\temp"
-    Expand-Archive -Force $_ -DestinationPath $tempPath
-    
+Get-ChildItem "$projectTemplates\*.zip" -Recurse |ForEach-Object{
+    New-Item $tempPath -ItemType Directory|out-null
+    Expand-Archive $_.FullName -DestinationPath $tempPath -Force
+    Remove-Item $_.FullName  -Force
     $vsTemplate=(Get-ChildItem $tempPath -Filter *.vstemplate | Select-Object -First 1).FullName
     $content=Get-Content $vsTemplate
     $content = $content -ireplace 'eXpandFramework v([^ ]*)', "eXpandFramework v$($version.Major).$($version.Minor)"
     $content = $content -ireplace 'Xpand.VSIX, Version=([^,]*)', "Xpand.VSIX, Version=$($version.ToString())"
     Set-Content $vsTemplate $content
-    Get-ChildItem $tempPath | Compress-Archive -DestinationPath $_ -Force 
-    Remove-Item $tempPath -Recurse -Force
+    Compress-XFiles -Path $tempPath -DestinationPath $_.FullName 
+    Remove-Item $tempPath -Recurse -Force 
 }
 
 Get-ChildItem "$XpandFolder\Xpand.Plugins\Xpand.VSIX\ProjectTemplates\*.vstemplate" -Recurse|ForEach-Object{
-    $content=Get-Content $_
+    $content=Get-Content $_.FullName
     $content = $content -ireplace "TemplateWizard.v([^,]*),", "TemplateWizard.v$($version.Major).$($version.Minor),"
-    Set-Content $_ $content
+    Set-Content $_.FullName $content
 }
 
 #build VSIX
 $fileName="$XpandFolder\Xpand.Plugins\Xpand.VSIX\Xpand.VSIX.csproj"
-& "$XpandFolder\Support\Tool\nuget.exe" Restore $fileName -PackagesDirectory "$XpandFolder\Support\_third_party_assemblies\Packages"
+& nuget Restore $fileName -PackagesDirectory "$XpandFolder\Support\_third_party_assemblies\Packages"
 & "$msbuild" "$fileName" "/p:Configuration=Release;DeployExtension=false;OutputPath=$XpandFolder\Xpand.Dll\Plugins" /v:m /WarnAsError
 
 

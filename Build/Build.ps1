@@ -13,10 +13,17 @@ properties {
     $dxPath=$null
     $publishNugetFeed="https://api.nuget.org/v3/index.json"
     $nugetApiKey=$null
+    $UseAllPackageSources=$true
 }
 
-Task Release  -depends  Clean,Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
+Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
 
+Task InstallDX{
+    InvokeScript{
+        Install-XNugetCommandLine
+        Install-XDX -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-DXVersion $version -build)
+    }
+}
 Task Init  {
     InvokeScript{
         "$root\Xpand.dll","$root\Build","$root\Build\Temp","$root\Support\_third_party_assemblies\Packages\" | ForEach-Object{
@@ -25,13 +32,13 @@ Task Init  {
         Get-ChildItem "$root\support\_third_party_assemblies\" -Recurse  | ForEach-Object{
             Copy-Item $_.FullName "$root\Xpand.dll\$($_.FileName)" -Force
         }
-    
-        $r=New-Command "Nuget" "$root\support\tool\nuget.exe" "restore $root\Support\BuildHelper\BuildHelper.sln -PackagesDirectory $root\Support\_third_party_assemblies\Packages"
+        
+        $r=New-XCommand "Nuget" nuget "restore $root\Support\BuildHelper\BuildHelper.sln -PackagesDirectory $root\Support\_third_party_assemblies\Packages"
         if ($r.ExitCode){
             throw $r.stderr
         }
         $r.stdout
-        Start-Build $msbuild (GetBuildArgs "$root\Support\BuildHelper\BuildHelper.sln")
+        Start-XBuild $msbuild (GetBuildArgs "$root\Support\BuildHelper\BuildHelper.sln")
         & $root/Xpand.dll/BuildHelper.exe 
         
         Get-ChildItem "$root" "*.csproj" -Recurse|ForEach-Object {
@@ -56,7 +63,7 @@ Task Init  {
 Task Finalize {
     InvokeScript{
         Get-ChildItem "$root\Xpand.dll\" -Include "DevExpress.*" -Recurse | ForEach-Object{
-            if (![system.io.path]::GetFileName($_).StartsWith("DevExpress.XAF") ){
+            if (![system.io.path]::GetFileName($_).StartsWith("Xpand.XAF") ){
                 remove-item $_ -Force -Recurse
             }
         }
@@ -70,7 +77,7 @@ Task Finalize {
 Task BuildExtras{
     InvokeScript{
         "$root\Support\XpandTestExecutor\XpandTestExecutor.sln","$root\Support\XpandTestExecutor\RDClient\RDClient.csproj" |ForEach-Object{
-            Start-Build $msbuild (GetBuildArgs $_)
+            Start-XBuild $msbuild (GetBuildArgs $_)
         }
     }
 }
@@ -94,7 +101,11 @@ Task Version{
 
 Task RestoreNuget{
     InvokeScript {
-        & "$PSScriptRoot\Restore-Nuget.ps1" -packageSources $packageSources -version $version -throttle $throttle
+        $sources=$packageSources
+        if ($UseAllPackageSources){
+            $sources=$($sources+$(Get-PackageSource|select-object -ExpandProperty Location -Unique))|Select-Object -Unique
+        }
+        & "$PSScriptRoot\Restore-Nuget.ps1" -packageSources $sources -version $version -throttle $throttle
     }   
 }
 
@@ -187,7 +198,7 @@ Task CompileModules{
         $projects|ForEach-Object{
             $fileName=(Get-Item $_).Name
             write-host "Building $fileName..." -f "Blue"
-            Start-Build $msbuild (GetBuildArgs "$_") 
+            Start-XBuild $msbuild (GetBuildArgs "$_") 
         }
 
         $helpers=($group.HelperProjects|GetProjects)+ ($group.VSAddons|GetProjects)
@@ -289,7 +300,8 @@ function InvokeScript($sb,$maxRetries=0){
         exec $sb -maxRetries $maxRetries
     }
     catch {
-        Write-Warning $_.Exception
+        Write-Error ($_.Exception | Format-List -Force | Out-String) -ErrorAction Continue
+        Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Continue
         exit 1
     }
 }

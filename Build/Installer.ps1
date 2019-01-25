@@ -3,7 +3,6 @@ Param (
     [string]$DXVersion="0.0.0.0"
 )
 . "$PSScriptRoot\Utils.ps1"
-& "$PSScriptRoot\ImportXpandPosh.ps1"
 Push-Location "$XpandFolder"
 if ($DXVersion -eq "0.0.0.0"){
     $DXVersion=Get-XpandVersion "$XpandFolder"
@@ -26,7 +25,7 @@ Get-ChildItem -Path ".\Xpand.DLL" -Include "*.*" | Where-Object{
     (("*.dll","*.exe","*.config","*.pdb"|where{$fullName -like $_}).Length -gt 0) -and ($fullName -notlike "*\Plugins\*")
 } | 
 Copy-Item -Destination "$installerFolder\Xpand.DLL\" -Force
-Start-Zip $packageFolder\Xpand-lib-$DXVersion.zip $installerFolder\Xpand.DLL
+Compress-XFiles -DestinationPath $packageFolder\Xpand-lib-$DXVersion.zip -Path $installerFolder\Xpand.DLL
 
 Copy-Item "$XpandFolder\Xpand.DLL\Plugins\Xpand.VSIX.vsix" "$packageFolder\Xpand.VSIX-$DXVersion.vsix"
 
@@ -39,20 +38,15 @@ Get-ChildItem $XpandFolder -recurse -Include "*.*" |where{
     where{$fullName -like $_}).Length -eq 0)
 } | foreach {CloneItem $_ -TargetDir $sourceFolder -SourceDir $XpandFolder  }
 Remove-Item "$sourceFolder\build" -Recurse -Force 
-Start-Zip "$installerFolder\Source.zip" $sourceFolder 
+Compress-XFiles -DestinationPath "$installerFolder\Source.zip" -path $sourceFolder 
 Remove-Item $sourceFolder -Force -Recurse
 
 
 Copy-Item "$installerFolder\Source.zip" -Destination "$packageFolder\Xpand-Source-$DXVersion.zip"
 
-#Create installer
+
 & "$XpandFolder\Support\Tool\NSIS\makensis.exe" /DXVERSION=$Version $XpandFolder\Support\Build\Xpand.nsi
 Move-Item "$XpandFolder\Support\Build\Setup.exe" -Destination "$installerFolder\eXpandFramework-$DXVersion.exe" -Force
-
-#Copy source
-
-
-
 Pop-Location
 
 

@@ -14,7 +14,7 @@ New-Item $nupkgPath -ItemType Directory -ErrorAction SilentlyContinue
 $nupkgPath=[System.IO.Path]::GetFullPath($nupkgPath)
 Remove-Item "$basePath\build\temp" -Force -Recurse -ErrorAction SilentlyContinue 
 New-Item "$basePath\build\temp" -ItemType Directory -ErrorAction SilentlyContinue
-$nugetExe=[System.IO.Path]::GetFullPath( $PSScriptRoot+"\..\Tool\nuget.exe")
+
 
 Get-ChildItem "$basePath/Xpand.DLL" -Include @('*.pdb','*.dll')| Copy-Item -Destination "$basePath\build\temp\$_" 
 
@@ -32,7 +32,7 @@ Remove-Item "$nupkgPath" -Force -Recurse
 
 $nuspecFiles=Get-ChildItem -Path $nuspecFiles -Filter *.nuspec
 
-& "$PSScriptRoot\ImportXpandPosh.ps1"
+
 
 workflow Invoke-Pack {
     param ($psObj )
@@ -40,7 +40,7 @@ workflow Invoke-Pack {
     Foreach -parallel ($nuget in $psObj.Nuspecs) { 
         InlineScript {
             Write-Output "Packing $($Using:nuget)"
-            & $Using:psObj.NugetExe Pack $Using:nuget -version $Using:psObj.Version -OutputDirectory $Using:psObj.OutputDirectory
+            & Nuget Pack $Using:nuget -version $Using:psObj.Version -OutputDirectory $Using:psObj.OutputDirectory
         } 
         $Workflow:complete = $Workflow:complete + 1 
         [int]$percentComplete = ($Workflow:complete * 100) / $Workflow:psObj.Nuspecs.Count
@@ -52,7 +52,6 @@ workflow Invoke-Pack {
 
 $psObj = [PSCustomObject]@{
     OutputDirectory = $nupkgPath
-    NugetExe        = (Get-Item $nugetExe).FullName
     Nuspecs          = $nuspecFiles|Select-Object -ExpandProperty FullName 
     version=$XpandVersion
 }
@@ -65,7 +64,7 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
 
 $packageDir="$basepath\Build\_package\$XpandVersion"
 New-Item $packageDir -ItemType Directory -Force|Out-Null
-Start-Zip "$packageDir\Nupkg-$XpandVersion.zip" $nupkgPath
+Compress-XFiles -DestinationPath "$packageDir\Nupkg-$XpandVersion.zip" -path $nupkgPath
 
 
 

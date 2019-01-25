@@ -1,43 +1,4 @@
-function InstallPackage($outputPath, $packageName,$sources,$rootPath, $version,$csproj,$packagesConfigPath,$projectDir,$projectPath){
-    $packageInstalled = Test-Path "$packagesConfigPath"
-    [xml]$packagesConfig=$null
-    if ($packageInstalled) {
-        $packagesConfig = Get-Content $packagesConfigPath
-    }
-    if ($packageInstalled) {
-        $packageInstalled = ($packagesConfig.packages.Package.Id|Where-Object {$_ -eq $packageName}).Count -gt 0
-    }
-    if ($packageInstalled) {
-        return
-    }
-    if (!$(Test-path $outputPath)) {
-        Write-Host "Installing $packageName" -f "Green"
-        $r = New-Command "Nuget" "$rootpath\Support\Tool\Nuget.exe" "Install $packageName -source ""$sources"" -ConfigFile $rootpath\Nuget.config -version $version"
-        if ($r.ExitCode) {
-            throw $r.stderr
-        }
-        if ($r.stdout.Contains("invalid")) {
-            throw $r.stdout
-        }
-    }
-    if (((($csproj.Project.ItemGroup.None.Include|Where {$_ -eq "packages.config"}).Count -eq 0 -or !$(Test-Path $packagesConfigPath)))) {
-        $itemGroup = $csproj.CreateElement("ItemGroup", $csproj.DocumentElement.NamespaceURI)
-        $csproj.Project.AppendChild($itemGroup)|out-null
-        $none = $csproj.CreateElement("None", $csproj.DocumentElement.NamespaceURI)
-        $none.SetAttribute("Include", "packages.config")
-        $itemGroup.AppendChild($none)|out-null    
-        Set-Content "$projectDir\packages.config" "﻿<?xml version=""1.0"" encoding=""utf-8""?>`r`n<packages>`r`n</packages>"
-        $packagesConfig = Get-Content "$projectDir\packages.config"
-    }
-    $package = $packagesConfig.CreateElement("package", $packagesConfig.DocumentElement.NamespaceURI)
-    $packagesConfig.SelectSingleNode("//packages").AppendChild($package)|out-null
-    $package.SetAttribute("id", $packageName)
-    $package.SetAttribute("version", $version)
-    $package.SetAttribute("targetFramework", "net461")
-    $packagesConfig.Save($packagesConfigpath)
-    $csproj.Save($projectPath)  
-    return $package 
-}
+
 function CloneItem{
     [cmdletbinding()]
     param(

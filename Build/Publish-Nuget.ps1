@@ -12,13 +12,12 @@ $matches = Get-Content $assemblyInfo -ErrorAction Stop | Select-String 'public c
 
 $nupkgPath= "$PSScriptRoot\..\..\Build\Nuget"
 $nupkgPath=[System.IO.Path]::GetFullPath($nupkgPath)
-$nugetExe=[System.IO.Path]::GetFullPath( $PSScriptRoot+"\..\Tool\nuget.exe")
+
 
 Set-Location $nupkgPath
 $packages=Get-ChildItem -Path $nupkgPath -Filter *.nupkg
 $paramObject = [pscustomobject] @{
     apiKey=$apiKey
-    nugetExe=$nugetExe
     source=$source
 }
 # Import-Module "$PSScriptRoot\XpandPosh.psm1" -Force
@@ -27,7 +26,7 @@ $sb={
     param($parameter)
     
     $params="push $($_.FullName) $($parameter.apiKey) -source $($parameter.source)"
-    $result=New-Command $_ $parameter.nugetExe $params $parameter.location
+    $result=New-Command $_ nuget $params $parameter.location
     [PSCustomObject]@{
         result = $result
         project=$_

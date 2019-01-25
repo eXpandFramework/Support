@@ -7,29 +7,32 @@ param(
     [int]$throttle=(Get-WmiObject -class Win32_ComputerSystem).numberoflogicalprocessors,
     [string[]]$taskList=@("Release"),
     [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
-    [string]$nugetApiKey=$null
+    [string]$nugetApiKey=$null,
+    [switch]$UseAllPackageSources
 )
-Get-PackageProvider -Name "Nuget" -Force|Out-null
 
-& "$PSScriptRoot\ImportXpandPosh.ps1"
+$(@{
+    Name = "psake"
+    Version ="4.7.4"
+}),$(@{
+    Name = "XpandPosh"
+    Version ="1.0.10"
+}),$(@{
+    Name = "PoshRSJob"
+    Version ="1.7.4.4"
+})|ForEach-Object{
+    & "$PSScriptRoot\Install-Module.ps1" $_
+} 
+
 if (!$version){
-    $version=Get-VersionFromFile "$PSScriptRoot\..\..\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
+    $version=Get-XVersionFromFile "$PSScriptRoot\..\..\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
 }
 if (!$msbuild){
-    $msbuild=Get-MsBuildLocation
-}
-Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
-if (!(Get-module -ListAvailable -Name PoshRSJob)){
-    Install-Module -Name PoshRSJob 
+    $msbuild=Get-XMsBuildLocation
 }
 
-if (!(Get-Module -ListAvailable -Name psake)){
-    Install-Module -Name psake
-}
-
-Write-HostHashTable $(Get-AllParameters $MyInvocation $(Get-Variable))
 $clean=$($taskList -in "Release")
-Invoke-psake  "$PSScriptRoot\Build.ps1" -properties @{
+Invoke-Xpsake  "$PSScriptRoot\Build.ps1" -properties @{
     "version"=$version;
     "msbuild"=$msbuild;
     "clean"=$clean;
@@ -38,4 +41,5 @@ Invoke-psake  "$PSScriptRoot\Build.ps1" -properties @{
     "packageSources"=$packageSources;
     "publishNugetFeed"=$publishNugetFeed;
     "nugetApiKey"=$nugetApiKey;
+    "UseAllPackageSources"=$UseAllPackageSources
 } -taskList $taskList

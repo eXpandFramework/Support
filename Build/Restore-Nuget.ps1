@@ -7,20 +7,16 @@ param(
 [xml]$xml =Get-Content "$PSScriptRoot\Xpand.projects"
 $group=$xml.Project.ItemGroup
 Write-Host "Starting nuget restore from $currentLocation\Restore-Nuget.ps1...." -f "Blue"
-$paramObject = [pscustomobject] @{
-    location = $PSScriptRoot
-    nugetExe=$PSScriptRoot+"\..\Tool\nuget.exe"
-    packageSources=[system.string]::join(";",$packageSources)
-}
 
-& "$PSScriptRoot\MigrateDxReference.ps1" -version $version -packageSources $packageSources
-get-childitem "$PSScriptRoot\..\.." "packages.config" -Recurse|ForEach-Object{
+$rootPath="$PSScriptRoot\..\.."
+Update-XHintPath -OutputPath "$rootPath\Xpand.Dll" -SourcesPath $rootPath
+get-childitem $rootPath "packages.config" -Recurse|ForEach-Object{
     $xml=Get-Content $_.FullName 
-    $xml.packages.Package.Id|Group-Object |where{$_.Count -gt 1}|ForEach-Object{
-        $_.Group|select -skip 1 | ForEach-Object{
+    $xml.packages.Package.Id|Group-Object |Where-Object{$_.Count -gt 1}|ForEach-Object{
+        $_.Group|Select-Object -skip 1 | ForEach-Object{
             $id=$_
-            $item=$xml.packages.Package|where{$_.id -eq $id}|select -first 1
-            $item.parentNode.RemoveChild($item)
+            $project=$xml.packages.Package|Where-Object{$_.id -eq $id}|select -first 1
+            $project.parentNode.RemoveChild($project)
         }
     }
     $xml.Save($_.FullName)
@@ -36,36 +32,24 @@ $projects=($group.DemoSolutions|GetProjects)+
 ($group.CoreProjects|GetProjects)
 
 
-$sb={
-    param($parameter)
-    Push-Location $parameter.location
-    $packagesDirectory= "$($parameter.location)\..\_third_party_assemblies\Packages"
-    $params="restore ""$_""  -PackagesDirectory $packagesDirectory -source ""$($parameter.packageSources)"""
-    $result=invoke-retry{
-        New-Command $_ $parameter.nugetExe $params $parameter.location
-    }
-    [PSCustomObject]@{
-        result = $result
-        project=$_
-        params=$params
-    } 
-}
-& "$PSScriptRoot\ImportXpandPosh.ps1" 
-$modules=(Get-Module XpandPosh).Path
+$psObj=[PSCustomObject]@{
+    PackagesDirectory = (Get-Item "$PSScriptRoot\..\_third_party_assemblies\Packages").FullName
+    packageSources=[system.string]::join(";",$packageSources)
+    projects=$projects
+} 
 
-$projects|start-rsjob  $sb -argumentlist $paramObject -Throttle $throttle -ModulesToImport $modules |Wait-RSJob -ShowProgress -Timeout 180 |ForEach-Object{
-    $j=Get-RSJob $_ |Receive-RSJob
-    $j.result.stdout
-    $j.result.project
-    $j.params
-    if ($j.result.stderr){
-        throw "Fail to restore $j`n`r$($j.result.stderr)" 
+workflow Restore-Nuget{
+    param([PSCustomObject]$psObj)
+    $complete = 0
+    foreach -parallel ($project in $psObj.Projects) {
+        InlineScript{
+            & nuget Restore $Using:project -PackagesDirectory $Using:psObj.PackagesDirectory -source $Using:psObj.packageSources
+        }
+        $Workflow:complete = $Workflow:complete + 1 
+        [int]$percentComplete = ($Workflow:complete * 100) / $Workflow:psObj.Projects.Count
+        Write-Progress -Id 1 -Activity  "Restoring Nugets" -PercentComplete $percentComplete -Status "$percentComplete% :$($project)"
     }
-    elseif ($j.result.stdout -like "*invalid arguments*") {
-        throw "Invalid arguments, params:$($j.params)"
-    }
-    else{
-        Write-Host "Packages restored succefully for $($j.result.commandTitle)" -f "Green"
-    }
+    Write-Progress -Id 1 -Status "Ready" -Activity "Restoring Nugets" -Completed
 }
-Get-RsJob -State Running
+
+Restore-Nuget $psObj

@@ -1,14 +1,18 @@
 param(
-    $version="1.1.1.1"
+    $version="18.2"
 )
-& "$PSScriptRoot\ImportXpandPosh.ps1"
-Disable-ExecutionPolicy
+
+Disable-XExecutionPolicy
 $root=(get-item "$PSScriptRoot\..\..\").FullName
 $pdbPath="$root\Xpand.DLL\pdb"
+if (Test-Path $pdbPath){
+    Get-ChildItem $pdbPath -Recurse|Remove-Item -Force
+}
 New-Item -ItemType Directory -Force -Path $pdbPath
+$version=Get-XDXVersion $version
+Get-ChildItem "$root\Xpand.Dll" -Include "Xpand.*.pdb" -Exclude "Xpand.XAF.*.pdb" -Recurse |Copy-Item -Destination $pdbPath 
 
-Copy-Item -path "$root\*" -include "Xpand.*.pdb" -Destination $pdbPath 
-
-& "$PSScriptRoot\Sourcepack.ps1" -symbolsfolder $pdbPath -userId eXpand -repository eXpand -branch $version -sourcesRoot $root  -githuburl https://raw.githubusercontent.com -serverIsRaw -dbgToolsPath "$root\Support\Tool\srcsrv" 
+Update-XSymbols -symbolsfolder $pdbPath -user eXpand -repository eXpand -branch $version -sourcesRoot $root  -dbgToolsPath "$root\Support\Tool\srcsrv" 
 
 Copy-Item -path $pdbPath -include "Xpand.*.pdb" -Destination $root -Force
+Get-ChildItem $pdbPath -Recurse|Remove-Item -Force
