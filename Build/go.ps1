@@ -16,7 +16,7 @@ $(@{
     Version ="4.7.4"
 }),$(@{
     Name = "XpandPosh"
-    Version ="1.0.10"
+    Version ="1.0.12"
 }),$(@{
     Name = "PoshRSJob"
     Version ="1.7.4.4"
