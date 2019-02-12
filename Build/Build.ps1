@@ -8,7 +8,6 @@ properties {
     $configuration=$null
     $verbosity=$null
     $msbuildArgs=$null
-    $throttle=1
     $packageSources=$null
     $dxPath=$null
     $publishNugetFeed="https://api.nuget.org/v3/index.json"
@@ -20,8 +19,7 @@ Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModule
 
 Task InstallDX{
     InvokeScript{
-        Install-XNugetCommandLine
-        Install-XDX -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-DXVersion $version -build)
+        Install-XDX -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-XDXVersion $version -build)
     }
 }
 Task Init  {
@@ -83,7 +81,7 @@ Task BuildExtras{
 }
 Task PackNuget{
     InvokeScript{
-        & "$PSScriptRoot\PackNuget.ps1"  $throttle
+        & "$PSScriptRoot\PackNuget.ps1"  
     }
 }
 
@@ -105,7 +103,7 @@ Task RestoreNuget{
         if ($UseAllPackageSources){
             $sources=$($sources+$(Get-PackageSource|select-object -ExpandProperty Location -Unique))|Select-Object -Unique
         }
-        & "$PSScriptRoot\Restore-Nuget.ps1" -packageSources $sources -version $version -throttle $throttle
+        & "$PSScriptRoot\Restore-Nuget.ps1" -packageSources $sources 
     }   
 }
 
@@ -241,38 +239,12 @@ task CompileDemos {
 }
 
 function BuildProjects($projects,$clean ){
-    $modules=(Get-Module XpandPosh).Path
-    $sb={
-        param($parameter)
-        Push-Location $_.DirectoryName
-        $result=New-Command $_ $parameter.msbuild """$_"" $($parameter.msbuildArgs)"
-        if ($parameter.clean){
-            New-Command $_ $parameter.msbuild """$_"" $($parameter.msbuildArgs) /t:Clean"
-        }
-        [PSCustomObject]@{
-            result = $result
-            project=$_
-        } 
-    }
-    $paramObject = [pscustomobject] @{
-        location = $PSScriptRoot
-        msbuild=$msbuild
-        msbuildArgs=[system.string]::Join(" ",$msbuildArgs)
-        clean=$clean
-    }
-    $projects|start-rsjob  $sb -argumentlist $paramObject -Throttle $throttle -ModulesToImport $modules -FunctionFilesToImport "$PSScriptRoot\Build.ps1"  |Wait-RSJob -ShowProgress |ForEach-Object{
-        $j=Get-RSJob $_  |Receive-RSJob 
-        $j.result.stdout
-        $j.result.commandTitle
-        if ($j.result.ExitCode){
-            throw "Fail to build $($j.result.CommandTitle)`n`r$($j.result.stdout)" 
-        }
-        else{
-            Write-Host "Project $($j.result.commandTitle) build succefully" -f "Green"
-        }
+    $v="msbuildArgs","root","msbuild"|Get-Variable
+    $projects|Invoke-Parallel -ImportVariables -ImportFunctions -AdditionalVariables $v  {
+        $bargs=(@("$_","/p:OutputPath=$root\Xpand.dll\")+$msbuildArgs.Split(";"))
+        (Start-XBuild $msbuild $bargs)
     }
 }
-
 
 function GetBuildArgs($projectPath){
     (@($projectPath,"/p:OutputPath=$root\Xpand.dll\")+$msbuildArgs)

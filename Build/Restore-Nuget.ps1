@@ -1,9 +1,7 @@
 param(
-    [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages") ,  
-    [int]$throttle=10,
-    [string]$version="18.2.300.1"
+    [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages") 
 )
-
+# Import-Module XpandPosh -Prefix X -Force
 [xml]$xml =Get-Content "$PSScriptRoot\Xpand.projects"
 $group=$xml.Project.ItemGroup
 Write-Host "Starting nuget restore from $currentLocation\Restore-Nuget.ps1...." -f "Blue"
@@ -37,19 +35,7 @@ $psObj=[PSCustomObject]@{
     packageSources=[system.string]::join(";",$packageSources)
     projects=$projects
 } 
-
-workflow Restore-Nuget{
-    param([PSCustomObject]$psObj)
-    $complete = 0
-    foreach -parallel ($project in $psObj.Projects) {
-        InlineScript{
-            & nuget Restore $Using:project -PackagesDirectory $Using:psObj.PackagesDirectory -source $Using:psObj.packageSources
-        }
-        $Workflow:complete = $Workflow:complete + 1 
-        [int]$percentComplete = ($Workflow:complete * 100) / $Workflow:psObj.Projects.Count
-        Write-Progress -Id 1 -Activity  "Restoring Nugets" -PercentComplete $percentComplete -Status "$percentComplete% :$($project)"
-    }
-    Write-Progress -Id 1 -Status "Ready" -Activity "Restoring Nugets" -Completed
+$psObj.Projects|Invoke-XParallel -ImportVariables -ActivityName "Restoring Nugets" -AdditionalVariables $(Get-Variable "psObj") {
+    Write-Host "Restoring $_ from $($psObj.packageSource) in $($psObj.PackagesDirectory)"
+    (& nuget Restore $_ -PackagesDirectory $psObj.PackagesDirectory -source $psObj.packageSources)
 }
-
-Restore-Nuget $psObj
