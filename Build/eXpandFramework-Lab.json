@@ -1,1 +1,292 @@
-{"triggers":[{"branchFilters":["+18.2"],"pathFilters":[],"batchChanges":false,"maxConcurrentBuildsPerBranch":1,"pollingInterval":0,"triggerType":2}],"variables":{"BuildConfiguration":{"value":"release"},"BuildPlatform":{"value":"any cpu"},"ProjectBuildMajorNumber":{"value":"18.2.301"},"system.debug":{"value":"false","allowOverride":true}},"variableGroups":[{"variables":{"DXAssembliesDownloadLink":{"value":null,"isSecret":true},"NuGetApiKey":{"value":null,"isSecret":true},"NugetSource":{"value":null,"isSecret":true},"xpandgithubpass":{"value":null,"isSecret":true},"apobekiarisgithubpass":{"value":null,"isSecret":true},"DXApiFeed":{"value":null,"isSecret":true}},"type":"AzureKeyVault","name":"Keys","id":1}],"retentionRules":[{"branches":["+refs/heads/*"],"artifacts":[],"artifactTypesToDelete":["FilePath","SymbolStore"],"daysToKeep":30,"minimumToKeep":1,"deleteBuildRecord":true,"deleteTestResults":true}],"properties":{},"tags":[],"_links":{"self":{"href":"https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_apis/build/Definitions/11?revision=16"},"web":{"href":"https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_build/definition?definitionId=11"},"editor":{"href":"https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_build/designer?id=11&_a=edit-build-definition"},"badge":{"href":"https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_apis/build/status/11"}},"buildNumberFormat":"$(ProjectBuildMajorNumber).$(Rev:rr)","jobAuthorizationScope":1,"jobTimeoutInMinutes":60,"jobCancelTimeoutInMinutes":5,"badgeEnabled":true,"process":{"phases":[{"steps":[{"environment":{},"enabled":true,"continueOnError":false,"alwaysRun":false,"displayName":"Format Revision","timeoutInMinutes":0,"condition":"succeeded()","task":{"id":"e213ff0f-5d5c-4791-802d-52ea3e7be1f1","versionSpec":"2.*","definitionType":"task"},"inputs":{"targetType":"inline","filePath":"","arguments":"","script":"return\n### format revision#######\n$major=$env:ProjectBuildMajorNumber\n$rev=$env:Build_BuildNumber.Replace($major,\"\")\n$rev=$rev.Replace(\".\",\"\")\nWrite-Host $rev\nWrite-Host \"##vso[task.setvariable variable=Build.BuildNumber]$major$rev\"\nWrite-Host \"Version=$major$rev\"","errorActionPreference":"stop","failOnStderr":"false","ignoreLASTEXITCODE":"false","pwsh":"false","workingDirectory":""}},{"environment":{},"enabled":true,"continueOnError":true,"alwaysRun":true,"displayName":"Task group: BuildTasks $(DXAssembliesDownloadLink)","timeoutInMinutes":0,"condition":"succeededOrFailed()","task":{"id":"ac76ae9a-21f4-4445-8304-deafa96d2a42","versionSpec":"1.*","definitionType":"metaTask"},"inputs":{"DXAssembliesDownloadLink":"$(DXAssembliesDownloadLink)","NuGetApiKey":"$(NuGetApiKey)","NuGetSource":"$(NuGetSource)"}},{"environment":{},"enabled":true,"continueOnError":true,"alwaysRun":true,"displayName":"Task group: BuildGitHubProjects $(System.DefaultWorkingDirectory)\\GitHub","timeoutInMinutes":0,"condition":"succeededOrFailed()","task":{"id":"48fa6fbb-1baf-4f17-a13c-d3f23a530eac","versionSpec":"1.*","definitionType":"metaTask"},"inputs":{"BuildConfiguration":"debug","BuildPlatform":""}},{"environment":{},"enabled":true,"continueOnError":false,"alwaysRun":false,"displayName":"Notify Issues","timeoutInMinutes":0,"condition":"succeeded()","task":{"id":"e213ff0f-5d5c-4791-802d-52ea3e7be1f1","versionSpec":"2.*","definitionType":"task"},"inputs":{"targetType":"inline","filePath":"","arguments":"","script":"set-location $(System.DefaultWorkingDirectory)\\GitHub\\IssueNotifier\\src\nwrite-host \"publishing exe\"\ndotnet publish -r win10-x64\nwrite-host \"Build.BuildId=$(Build.BuildId)\"\nwrite-host \"Build.BuildNumber=$(Build.BuildNumber)\"\n& $(System.DefaultWorkingDirectory)\\GitHub\\IssueNotifier\\bin\\win10-x64\\IssueNotifier.exe -o apobekiaris -z eXpandFramework --r1 eXpand --r2 lab -p $(apobekiarisgithubpass) -v $(Build.BuildNumber) --BuildId $(Build.BuildId)","errorActionPreference":"stop","failOnStderr":"false","ignoreLASTEXITCODE":"false","pwsh":"false","workingDirectory":""}}],"name":"Agent job 1","refName":"Phase_1","condition":"succeeded()","target":{"executionOptions":{"type":0},"allowScriptsAuthAccessOption":false,"type":1},"jobAuthorizationScope":1,"jobCancelTimeoutInMinutes":1}],"type":1},"repository":{"properties":{"apiUrl":"https://api.github.com/repos/eXpandFramework/lab","branchesUrl":"https://api.github.com/repos/eXpandFramework/lab/branches","cloneUrl":"https://github.com/eXpandFramework/lab.git","fullName":"eXpandFramework/lab","manageUrl":"https://github.com/eXpandFramework/lab","refsUrl":"https://api.github.com/repos/eXpandFramework/lab/git/refs","defaultBranch":"18.2","connectedServiceId":"23a25ac5-6b02-4d48-b971-188c292ea678","isPrivate":"False","isFork":"False","ownerAvatarUrl":"https://avatars1.githubusercontent.com/u/8654086?v=4","lastUpdated":"11/07/2018 15:26:50","nodeId":"MDEwOlJlcG9zaXRvcnkxNTM4MTI5MDU=","hasAdminPermissions":"True","safeOwnerId":"8654086","safeOwnerName":"eXpandFramework","safeRepository":"eXpandFramework/lab","ownerIsAUser":"False","checkoutNestedSubmodules":"true","cleanOptions":"3","fetchDepth":"0","gitLfsSupport":"false","reportBuildStatus":"true","skipSyncSource":"false","labelSourcesFormat":"$(build.buildNumber)","labelSources":"0"},"id":"eXpandFramework/lab","type":"GitHub","name":"eXpandFramework/lab","url":"https://github.com/eXpandFramework/lab.git","defaultBranch":"18.2","clean":"true","checkoutSubmodules":true},"processParameters":{},"quality":1,"authoredBy":{"displayName":"Apostolis Bekiaris","url":"https://app.vssps.visualstudio.com/A0273b8f8-c4b5-4b29-8122-5acce58254db/_apis/Identities/c750f4bf-706b-60a8-95a9-06255ba3bc2a","_links":{"avatar":{"href":"https://dev.azure.com/eXpandDevOps/_apis/GraphProfile/MemberAvatars/aad.Yzc1MGY0YmYtNzA2Yi03MGE4LTk1YTktMDYyNTViYTNiYzJh"}},"id":"c750f4bf-706b-60a8-95a9-06255ba3bc2a","uniqueName":"apostolisb@devexpress.com","imageUrl":"https://dev.azure.com/eXpandDevOps/_api/_common/identityImage?id=c750f4bf-706b-60a8-95a9-06255ba3bc2a","descriptor":"aad.Yzc1MGY0YmYtNzA2Yi03MGE4LTk1YTktMDYyNTViYTNiYzJh"},"drafts":[],"queue":{"_links":{"self":{"href":"https://dev.azure.com/eXpandDevOps/_apis/build/Queues/3"}},"id":3,"name":"Hosted VS2017","url":"https://dev.azure.com/eXpandDevOps/_apis/build/Queues/3","pool":{"id":3,"name":"Hosted VS2017","isHosted":true}},"id":11,"name":"eXpandFramework-Lab","url":"https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_apis/build/Definitions/11?revision=16","uri":"vstfs:///Build/Definition/11","path":"\\","type":2,"queueStatus":0,"revision":16,"createdDate":"2018-11-14T11:42:23.173Z","project":{"id":"dc0010e5-9ecf-45ac-b89d-2d51897f3855","name":"eXpandFramework","url":"https://dev.azure.com/eXpandDevOps/_apis/projects/dc0010e5-9ecf-45ac-b89d-2d51897f3855","state":1,"revision":11,"visibility":2}}
+{
+    "triggers": [
+        {
+            "branchFilters": [
+                "+18.2"
+            ],
+            "pathFilters": [],
+            "batchChanges": false,
+            "maxConcurrentBuildsPerBranch": 1,
+            "pollingInterval": 0,
+            "triggerType": 2
+        }
+    ],
+    "variables": {
+        "BuildConfiguration": {
+            "value": "release"
+        },
+        "BuildPlatform": {
+            "value": "any cpu"
+        },
+        "ProjectBuildMajorNumber": {
+            "value": "18.2.301"
+        },
+        "system.debug": {
+            "value": "false",
+            "allowOverride": true
+        }
+    },
+    "variableGroups": [
+        {
+            "variables": {
+                "DXAssembliesDownloadLink": {
+                    "value": null,
+                    "isSecret": true
+                },
+                "NuGetApiKey": {
+                    "value": null,
+                    "isSecret": true
+                },
+                "NugetSource": {
+                    "value": null,
+                    "isSecret": true
+                },
+                "xpandgithubpass": {
+                    "value": null,
+                    "isSecret": true
+                },
+                "apobekiarisgithubpass": {
+                    "value": null,
+                    "isSecret": true
+                },
+                "DXApiFeed": {
+                    "value": null,
+                    "isSecret": true
+                }
+            },
+            "type": "AzureKeyVault",
+            "name": "Keys",
+            "id": 1
+        }
+    ],
+    "retentionRules": [
+        {
+            "branches": [
+                "+refs/heads/*"
+            ],
+            "artifacts": [],
+            "artifactTypesToDelete": [
+                "FilePath",
+                "SymbolStore"
+            ],
+            "daysToKeep": 30,
+            "minimumToKeep": 1,
+            "deleteBuildRecord": true,
+            "deleteTestResults": true
+        }
+    ],
+    "properties": {},
+    "tags": [],
+    "_links": {
+        "self": {
+            "href": "https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_apis/build/Definitions/11?revision=16"
+        },
+        "web": {
+            "href": "https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_build/definition?definitionId=11"
+        },
+        "editor": {
+            "href": "https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_build/designer?id=11&_a=edit-build-definition"
+        },
+        "badge": {
+            "href": "https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_apis/build/status/11"
+        }
+    },
+    "buildNumberFormat": "$(ProjectBuildMajorNumber).$(Rev:rr)",
+    "jobAuthorizationScope": 1,
+    "jobTimeoutInMinutes": 60,
+    "jobCancelTimeoutInMinutes": 5,
+    "badgeEnabled": true,
+    "process": {
+        "phases": [
+            {
+                "steps": [
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Format Revision",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "inline",
+                            "filePath": "",
+                            "arguments": "",
+                            "script": "return\n### format revision#######\n$major=$env:ProjectBuildMajorNumber\n$rev=$env:Build_BuildNumber.Replace($major,\"\")\n$rev=$rev.Replace(\".\",\"\")\nWrite-Host $rev\nWrite-Host \"##vso[task.setvariable variable=Build.BuildNumber]$major$rev\"\nWrite-Host \"Version=$major$rev\"",
+                            "errorActionPreference": "stop",
+                            "failOnStderr": "false",
+                            "ignoreLASTEXITCODE": "false",
+                            "pwsh": "false",
+                            "workingDirectory": ""
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": true,
+                        "alwaysRun": true,
+                        "displayName": "Task group: BuildTasks $(DXAssembliesDownloadLink)",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeededOrFailed()",
+                        "task": {
+                            "id": "ac76ae9a-21f4-4445-8304-deafa96d2a42",
+                            "versionSpec": "1.*",
+                            "definitionType": "metaTask"
+                        },
+                        "inputs": {
+                            "DXAssembliesDownloadLink": "$(DXAssembliesDownloadLink)",
+                            "NuGetApiKey": "$(NuGetApiKey)",
+                            "NuGetSource": "$(NuGetSource)"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": true,
+                        "alwaysRun": true,
+                        "displayName": "Task group: BuildGitHubProjects $(System.DefaultWorkingDirectory)\\GitHub",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeededOrFailed()",
+                        "task": {
+                            "id": "48fa6fbb-1baf-4f17-a13c-d3f23a530eac",
+                            "versionSpec": "1.*",
+                            "definitionType": "metaTask"
+                        },
+                        "inputs": {
+                            "BuildConfiguration": "debug",
+                            "BuildPlatform": ""
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Notify Issues",
+                        "timeoutInMinutes": 0,
+                        "condition": "succeeded()",
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "inline",
+                            "filePath": "",
+                            "arguments": "",
+                            "script": "set-location $(System.DefaultWorkingDirectory)\\GitHub\\IssueNotifier\\src\nwrite-host \"publishing exe\"\ndotnet publish -r win10-x64\nwrite-host \"Build.BuildId=$(Build.BuildId)\"\nwrite-host \"Build.BuildNumber=$(Build.BuildNumber)\"\n& $(System.DefaultWorkingDirectory)\\GitHub\\IssueNotifier\\bin\\win10-x64\\IssueNotifier.exe -o apobekiaris -z eXpandFramework --r1 eXpand --r2 lab -p $(apobekiarisgithubpass) -v $(Build.BuildNumber) --BuildId $(Build.BuildId)",
+                            "errorActionPreference": "stop",
+                            "failOnStderr": "false",
+                            "ignoreLASTEXITCODE": "false",
+                            "pwsh": "false",
+                            "workingDirectory": ""
+                        }
+                    }
+                ],
+                "name": "Agent job 1",
+                "refName": "Phase_1",
+                "condition": "succeeded()",
+                "target": {
+                    "executionOptions": {
+                        "type": 0
+                    },
+                    "allowScriptsAuthAccessOption": false,
+                    "type": 1
+                },
+                "jobAuthorizationScope": 1,
+                "jobCancelTimeoutInMinutes": 1
+            }
+        ],
+        "type": 1
+    },
+    "repository": {
+        "properties": {
+            "apiUrl": "https://api.github.com/repos/eXpandFramework/lab",
+            "branchesUrl": "https://api.github.com/repos/eXpandFramework/lab/branches",
+            "cloneUrl": "https://github.com/eXpandFramework/lab.git",
+            "fullName": "eXpandFramework/lab",
+            "manageUrl": "https://github.com/eXpandFramework/lab",
+            "refsUrl": "https://api.github.com/repos/eXpandFramework/lab/git/refs",
+            "defaultBranch": "18.2",
+            "connectedServiceId": "23a25ac5-6b02-4d48-b971-188c292ea678",
+            "isPrivate": "False",
+            "isFork": "False",
+            "ownerAvatarUrl": "https://avatars1.githubusercontent.com/u/8654086?v=4",
+            "lastUpdated": "11/07/2018 15:26:50",
+            "nodeId": "MDEwOlJlcG9zaXRvcnkxNTM4MTI5MDU=",
+            "hasAdminPermissions": "True",
+            "safeOwnerId": "8654086",
+            "safeOwnerName": "eXpandFramework",
+            "safeRepository": "eXpandFramework/lab",
+            "ownerIsAUser": "False",
+            "checkoutNestedSubmodules": "true",
+            "cleanOptions": "3",
+            "fetchDepth": "0",
+            "gitLfsSupport": "false",
+            "reportBuildStatus": "true",
+            "skipSyncSource": "false",
+            "labelSourcesFormat": "$(build.buildNumber)",
+            "labelSources": "0"
+        },
+        "id": "eXpandFramework/lab",
+        "type": "GitHub",
+        "name": "eXpandFramework/lab",
+        "url": "https://github.com/eXpandFramework/lab.git",
+        "defaultBranch": "18.2",
+        "clean": "true",
+        "checkoutSubmodules": true
+    },
+    "processParameters": {},
+    "quality": 1,
+    "authoredBy": {
+        "displayName": "Apostolis Bekiaris",
+        "url": "https://app.vssps.visualstudio.com/A0273b8f8-c4b5-4b29-8122-5acce58254db/_apis/Identities/c750f4bf-706b-60a8-95a9-06255ba3bc2a",
+        "_links": {
+            "avatar": {
+                "href": "https://dev.azure.com/eXpandDevOps/_apis/GraphProfile/MemberAvatars/aad.Yzc1MGY0YmYtNzA2Yi03MGE4LTk1YTktMDYyNTViYTNiYzJh"
+            }
+        },
+        "id": "c750f4bf-706b-60a8-95a9-06255ba3bc2a",
+        "uniqueName": "apostolisb@devexpress.com",
+        "imageUrl": "https://dev.azure.com/eXpandDevOps/_api/_common/identityImage?id=c750f4bf-706b-60a8-95a9-06255ba3bc2a",
+        "descriptor": "aad.Yzc1MGY0YmYtNzA2Yi03MGE4LTk1YTktMDYyNTViYTNiYzJh"
+    },
+    "drafts": [],
+    "queue": {
+        "_links": {
+            "self": {
+                "href": "https://dev.azure.com/eXpandDevOps/_apis/build/Queues/3"
+            }
+        },
+        "id": 3,
+        "name": "Hosted VS2017",
+        "url": "https://dev.azure.com/eXpandDevOps/_apis/build/Queues/3",
+        "pool": {
+            "id": 3,
+            "name": "Hosted VS2017",
+            "isHosted": true
+        }
+    },
+    "id": 11,
+    "name": "eXpandFramework-Lab",
+    "url": "https://dev.azure.com/eXpandDevOps/dc0010e5-9ecf-45ac-b89d-2d51897f3855/_apis/build/Definitions/11?revision=16",
+    "uri": "vstfs:///Build/Definition/11",
+    "path": "\\",
+    "type": 2,
+    "queueStatus": 0,
+    "revision": 16,
+    "createdDate": "2018-11-14T11:42:23.173Z",
+    "project": {
+        "id": "dc0010e5-9ecf-45ac-b89d-2d51897f3855",
+        "name": "eXpandFramework",
+        "url": "https://dev.azure.com/eXpandDevOps/_apis/projects/dc0010e5-9ecf-45ac-b89d-2d51897f3855",
+        "state": 1,
+        "revision": 11,
+        "visibility": 2
+    }
+}
