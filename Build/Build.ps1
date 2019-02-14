@@ -177,7 +177,7 @@ Task EasyTest{
 
 Task PublishNuget{
     InvokeScript{
-        & "$PSScriptRoot\Publish-Nuget.ps1"  $nugetApiKey $publishNugetFeed
+        Publish-NugetPackage "$root\Build\Nuget" $publishNugetFeed $nugetApiKey 
     }
 }
 
