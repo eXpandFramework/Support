@@ -4,7 +4,6 @@ param(
     [string]$msbuild=$null,
     [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages")   ,
     [string[]]$msbuildArgs=@("/p:Configuration=$configuration","/WarnAsError","/v:m"),
-    [int]$throttle=(Get-WmiObject -class Win32_ComputerSystem).numberoflogicalprocessors,
     [string[]]$taskList=@("Release"),
     [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
     [string]$nugetApiKey=$null,
