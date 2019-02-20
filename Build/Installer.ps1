@@ -22,21 +22,22 @@ New-Item -ItemType Directory -Path "$installerFolder\Xpand.DLL" -Force
 Copy-Item -Path ".\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe" -Destination "$installerFolder\Xpand.DLL\Xpand.ExpressApp.ModelEditor.exe"
 Get-ChildItem -Path ".\Xpand.DLL" -Include "*.*" | Where-Object{
     $fullName=$_.FullName
-    (("*.dll","*.exe","*.config","*.pdb"|where{$fullName -like $_}).Length -gt 0) -and ($fullName -notlike "*\Plugins\*")
+    (("*.dll","*.exe","*.config","*.pdb"|Where-Object{$fullName -like $_}).Length -gt 0) -and ($fullName -notlike "*\Plugins\*")
 } | 
 Copy-Item -Destination "$installerFolder\Xpand.DLL\" -Force
 Compress-XFiles -DestinationPath $packageFolder\Xpand-lib-$DXVersion.zip -Path $installerFolder\Xpand.DLL
 
 Copy-Item "$XpandFolder\Xpand.DLL\Plugins\Xpand.VSIX.vsix" "$packageFolder\Xpand.VSIX-$DXVersion.vsix"
+Copy-Item "$XpandFolder\Xpand.DLL\Plugins\Xpand.VSIX.vsix" "$installerfolder\Xpand.VSIX-$DXVersion.vsix"
 
 $sourceFolder="$installerFolder\Source\"
-Get-ChildItem $XpandFolder -recurse -Include "*.*" |where{
+Get-ChildItem $XpandFolder -recurse -Include "*.*" |Where-Object{
     $fullName=$_.FullName
     (("*\Build\Installer*","*\Build\_Package*", "*\.git\*",'*\$RECYCLE.BIN\*',"*\System Volume Information\*","*\packages\*",
     "*\dxbuildgenerator\packages\*","*\_Resharper\*","*\ScreenCapture\*","*.log","*web_view.html","win_view.html",
     "web_view.jpeg","win_view.jpeg","*\Xpand.DLL\*","*.user","*\.vs\*","*.suo","*\bin\*","*\obj\*","*.docstates","*teamcity*","*.gitattributes","*.gitmodules","*.gitignore"|
-    where{$fullName -like $_}).Length -eq 0)
-} | foreach {CloneItem $_ -TargetDir $sourceFolder -SourceDir $XpandFolder  }
+    Where-Object{$fullName -like $_}).Length -eq 0)
+} | ForEach-Object {CloneItem $_ -TargetDir $sourceFolder -SourceDir $XpandFolder  }
 Remove-Item "$sourceFolder\build" -Recurse -Force 
 Compress-XFiles -DestinationPath "$installerFolder\Source.zip" -path $sourceFolder 
 Remove-Item $sourceFolder -Force -Recurse
