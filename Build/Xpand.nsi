@@ -84,8 +84,6 @@ BrandingText "${APP_NAME} Install System v ${VERSION}"
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /r /x Xpand.DesignExperience ..\..\Build\Installer\*
-    call InstallProjectTemplates
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
 SectionEnd
 
@@ -162,7 +160,7 @@ Section /o -un.Main UNSEC0000
 SectionEnd
 
 Section -un.post UNSEC0001				
-    call un.InstallProjectTemplates
+
     
     DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\$(^UninstallLink).lnk"
