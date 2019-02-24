@@ -1,5 +1,7 @@
 param(
+    [parameter()]
     [string]$configuration="Release",
+    [parameter(Mandatory)]
     [string]$version=$null,
     [string]$msbuild=$null,
     [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages")   ,
@@ -7,7 +9,9 @@ param(
     [string[]]$taskList=@("Release"),
     [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
     [string]$nugetApiKey=$null,
-    [switch]$UseAllPackageSources
+    [switch]$UseAllPackageSources,
+    [parameter()]
+    [string]$Repository
 )
 
 $(@{
@@ -15,7 +19,7 @@ $(@{
     Version ="4.7.4"
 }),$(@{
     Name = "XpandPosh"
-    Version ="1.0.21"
+    Version ="1.0.22"
 })|ForEach-Object{
     & "$PSScriptRoot\Install-Module.ps1" $_
 } 
@@ -37,5 +41,6 @@ Invoke-Xpsake  "$PSScriptRoot\Build.ps1" -properties @{
     "packageSources"=$packageSources;
     "publishNugetFeed"=$publishNugetFeed;
     "nugetApiKey"=$nugetApiKey;
+    "Repository"=$Repository;
     "UseAllPackageSources"=$UseAllPackageSources
 } -taskList $taskList

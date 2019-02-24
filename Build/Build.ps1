@@ -13,6 +13,7 @@ properties {
     $publishNugetFeed="https://api.nuget.org/v3/index.json"
     $nugetApiKey=$null
     $UseAllPackageSources=$true
+    $Repository=$null
 }
 
 Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
@@ -107,11 +108,12 @@ Task RestoreNuget{
     }   
 }
 
-Task IndexSources{
-    InvokeScript{
-        & "$PSScriptRoot\IndexSources.ps1" $version
-    }
+Task IndexSources -precondition {$repository}{
+    $branch=Get-XDXVersion $version
+    Get-ChildItem $root\Xpand.dll Xpand*.pdb|
+    Update-XSymbols -TargetRoot "https://raw.githubusercontent.com/eXpandFramework/$repository/$branch" -sourcesRoot $root
 }
+
 Task EasyTest{
     InvokeScript  {
         $xpandDll="$root\Xpand.Dll"
