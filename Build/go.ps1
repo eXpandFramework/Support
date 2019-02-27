@@ -1,7 +1,5 @@
 param(
-    [parameter()]
     [string]$configuration="Release",
-    [parameter(Mandatory)]
     [string]$version=$null,
     [string]$msbuild=$null,
     [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages")   ,
@@ -10,8 +8,7 @@ param(
     [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
     [string]$nugetApiKey=$null,
     [switch]$UseAllPackageSources,
-    [parameter()]
-    [string]$Repository
+    [string]$Repository="eXpand"
 )
 
 $(@{
@@ -19,14 +16,14 @@ $(@{
     Version ="4.7.4"
 }),$(@{
     Name = "XpandPosh"
-    Version ="1.0.22"
+    Version ="1.0.23"
 })|ForEach-Object{
     & "$PSScriptRoot\Install-Module.ps1" $_
 } 
-
 if (!$version){
-    $version=Get-XVersionFromFile "$PSScriptRoot\..\..\Xpand\Xpand.Utils\Properties\XpandAssemblyInfo.cs"
+    return Get-XXpandVersion -Next
 }
+
 if (!$msbuild){
     $msbuild=Get-XMsBuildLocation
 }
