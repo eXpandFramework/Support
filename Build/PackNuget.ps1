@@ -1,8 +1,6 @@
 param(
 
 )
-    
-
 $basePath=[System.IO.Path]::GetFullPath( "$PSScriptRoot\..\..\")
 Set-Location $basePath
 $nuspecFiles= "$basePath/Support/Nuspec"
@@ -14,7 +12,6 @@ New-Item $nupkgPath -ItemType Directory -ErrorAction SilentlyContinue
 $nupkgPath=[System.IO.Path]::GetFullPath($nupkgPath)
 Remove-Item "$basePath\build\temp" -Force -Recurse -ErrorAction SilentlyContinue 
 New-Item "$basePath\build\temp" -ItemType Directory -ErrorAction SilentlyContinue
-
 
 Get-ChildItem "$basePath/Xpand.DLL" -Include @('*.pdb','*.dll')| Copy-Item -Destination "$basePath\build\temp\$_" 
 
@@ -32,32 +29,16 @@ Remove-Item "$nupkgPath" -Force -Recurse
 
 $nuspecFiles=Get-ChildItem -Path $nuspecFiles -Filter *.nuspec
 
-
-
-workflow Invoke-Pack {
-    param ($psObj )
-    $complete = 0
-    Foreach -parallel ($nuget in $psObj.Nuspecs) { 
-        InlineScript {
-            Write-Output "Packing $($Using:nuget)"
-            & Nuget Pack $Using:nuget -version $Using:psObj.Version -OutputDirectory $Using:psObj.OutputDirectory
-        } 
-        $Workflow:complete = $Workflow:complete + 1 
-        [int]$percentComplete = ($Workflow:complete * 100) / $Workflow:psObj.Nuspecs.Count
-        Write-Progress -Id 1 -Activity "Packing" -PercentComplete $percentComplete -Status "$percentComplete% :$($nuget.Name)"
-    }
-    Write-Progress -Id 1 -Status "Ready" -Activity "Packing" -Completed
-    
-}
-
 $psObj = [PSCustomObject]@{
     OutputDirectory = $nupkgPath
     Nuspecs          = $nuspecFiles|Select-Object -ExpandProperty FullName 
     version=$XpandVersion
 }
-Invoke-Pack $psObj
+$psObj.Nuspecs|Invoke-XParallel -VariablesToImport psObj -ActivityName Packing -IgnoreLastEditCode -script{
+    Nuget Pack $_ -version ($psObj.Version) -OutputDirectory ($psObj.OutputDirectory)
+}
 
-Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | foreach{
+Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | ForEach-Object{
     $filePath="$nuspecFolder\$_"
     (Get-Content $filePath).replace("src=`"$XpandFolder\Build",'src="\Build') | Set-Content $filePath -Encoding UTF8
 }

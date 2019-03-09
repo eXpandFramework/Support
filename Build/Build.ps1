@@ -37,7 +37,7 @@ Task Init  {
             throw $r.stderr
         }
         $r.stdout
-        Start-XBuild $msbuild (GetBuildArgs "$root\Support\BuildHelper\BuildHelper.sln")
+        & $msbuild (GetBuildArgs "$root\Support\BuildHelper\BuildHelper.sln")
         & $root/Xpand.dll/BuildHelper.exe 
         
         Get-ChildItem "$root" "*.csproj" -Recurse|ForEach-Object {
@@ -76,7 +76,7 @@ Task Finalize {
 Task BuildExtras{
     InvokeScript{
         "$root\Support\XpandTestExecutor\XpandTestExecutor.sln","$root\Support\XpandTestExecutor\RDClient\RDClient.csproj" |ForEach-Object{
-            Start-XBuild $msbuild (GetBuildArgs $_)
+            & $msbuild (GetBuildArgs $_)
         }
     }
 }
@@ -179,7 +179,7 @@ Task EasyTest{
 
 Task PublishNuget{
     InvokeScript{
-        Publish-NugetPackage "$root\Build\Nuget" $publishNugetFeed $nugetApiKey 
+        Publish-NugetPackage "$root\Build\Nuget" $publishNugetFeed $nugetApiKey -Verbose
     }
 }
 
@@ -198,7 +198,7 @@ Task CompileModules{
         $projects|ForEach-Object{
             $fileName=(Get-Item $_).Name
             write-host "Building $fileName..." -f "Blue"
-            Start-XBuild $msbuild (GetBuildArgs "$_") 
+            & $msbuild (GetBuildArgs "$_") 
         }
 
         $helpers=($group.HelperProjects|GetProjects)+ ($group.VSAddons|GetProjects)
@@ -241,10 +241,9 @@ task CompileDemos {
 }
 
 function BuildProjects($projects,$clean ){
-    $v="msbuildArgs","root","msbuild"|Get-Variable
-    $projects|Invoke-Parallel -ImportVariables -ImportFunctions -AdditionalVariables $v  {
+    $projects|Invoke-Parallel -ActivityName Building -VariablesToImport @("v","msbuildArgs","root","msbuild") -Script {
         $bargs=(@("$_","/p:OutputPath=$root\Xpand.dll\")+$msbuildArgs.Split(";"))
-        (Start-XBuild $msbuild $bargs)
+        & $msbuild $bargs
     }
 }
 

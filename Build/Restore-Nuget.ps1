@@ -35,7 +35,7 @@ $psObj=[PSCustomObject]@{
     packageSources=[system.string]::join(";",$packageSources)
     projects=$projects
 } 
-$psObj.Projects|Invoke-XParallel -ImportVariables -ActivityName "Restoring Nugets" -AdditionalVariables $(Get-Variable "psObj") {
-    Write-Host "Restoring $_ from $($psObj.packageSource) in $($psObj.PackagesDirectory)"
-    (& nuget Restore $_ -PackagesDirectory $psObj.PackagesDirectory -source $psObj.packageSources)
+$psObj.Projects|Invoke-XParallel -ActivityName "Restoring Nugets" -VariablesToImport psObj -IgnoreLastEditCode -Script {
+    "Restoring $_ from $($psObj.packageSource) in $($psObj.PackagesDirectory)"
+    nuget Restore $_ -PackagesDirectory $psObj.PackagesDirectory -source $psObj.packageSources
 }
