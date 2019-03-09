@@ -20,7 +20,7 @@ Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModule
 
 Task InstallDX{
     InvokeScript{
-        Install-XDX -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-XDXVersion $version -build)
+        Install-XDX -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-XDevExpressVersion -Version $version -build)
     }
 }
 Task Init  {
@@ -109,7 +109,7 @@ Task RestoreNuget{
 }
 
 Task IndexSources -precondition {$repository}{
-    $branch=Get-XDXVersion $version
+    $branch=Get-XDevExpressVersion $version
     Get-ChildItem $root\Xpand.dll Xpand*.pdb|
     Update-XSymbols -TargetRoot "https://raw.githubusercontent.com/eXpandFramework/$repository/$branch" -sourcesRoot $root
 }
