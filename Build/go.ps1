@@ -5,7 +5,6 @@ param(
     [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages")   ,
     [string[]]$msbuildArgs=@("/p:Configuration=$configuration","/WarnAsError","/v:m"),
     [string[]]$taskList=@("Release"),
-    [string]$publishNugetFeed="https://api.nuget.org/v3/index.json",
     [string]$nugetApiKey=$null,
     [switch]$UseAllPackageSources,
     [string]$Repository="eXpand"
@@ -36,7 +35,6 @@ Invoke-Xpsake  "$PSScriptRoot\Build.ps1" -properties @{
     "msbuildArgs"=$msbuildArgs;
     "throttle"=$throttle;
     "packageSources"=$packageSources;
-    "publishNugetFeed"=$publishNugetFeed;
     "nugetApiKey"=$nugetApiKey;
     "Repository"=$Repository;
     "UseAllPackageSources"=$UseAllPackageSources

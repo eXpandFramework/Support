@@ -10,7 +10,6 @@ properties {
     $msbuildArgs=$null
     $packageSources=$null
     $dxPath=$null
-    $publishNugetFeed="https://api.nuget.org/v3/index.json"
     $nugetApiKey=$null
     $UseAllPackageSources=$true
     $Repository=$null
@@ -174,12 +173,6 @@ Task EasyTest{
                 throw 
             }
         }
-    }
-}
-
-Task PublishNuget{
-    InvokeScript{
-        Publish-NugetPackage "$root\Build\Nuget" $publishNugetFeed $nugetApiKey -Verbose
     }
 }
 
