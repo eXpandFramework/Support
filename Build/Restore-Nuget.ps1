@@ -1,7 +1,7 @@
 param(
     [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages") 
 )
-# Import-Module XpandPosh -Prefix X -Force
+
 [xml]$xml =Get-Content "$PSScriptRoot\Xpand.projects"
 $group=$xml.Project.ItemGroup
 Write-Host "Starting nuget restore from $currentLocation\Restore-Nuget.ps1...." -f "Blue"
@@ -35,7 +35,7 @@ $psObj=[PSCustomObject]@{
     packageSources=[system.string]::join(";",$packageSources)
     projects=$projects
 } 
-$psObj.Projects|Invoke-XParallel -ActivityName "Restoring Nugets" -VariablesToImport psObj -IgnoreLastEditCode -Script {
+$psObj.Projects|Invoke-XParallel -ActivityName "Restoring Nugets" -VariablesToImport psObj -Script {
     "Restoring $_ from $($psObj.packageSource) in $($psObj.PackagesDirectory)"
     nuget Restore $_ -PackagesDirectory $psObj.PackagesDirectory -source $psObj.packageSources
 }

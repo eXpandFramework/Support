@@ -19,7 +19,7 @@ Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModule
 
 Task InstallDX{
     InvokeScript{
-        Install-XDX -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-XDevExpressVersion -Version $version -build)
+        Install-XDevExpress -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-XDevExpressVersion -Version $version -build)
     }
 }
 Task Init  {

@@ -34,7 +34,7 @@ $psObj = [PSCustomObject]@{
     Nuspecs          = $nuspecFiles|Select-Object -ExpandProperty FullName 
     version=$XpandVersion
 }
-$psObj.Nuspecs|Invoke-XParallel -VariablesToImport psObj -ActivityName Packing -IgnoreLastEditCode -script{
+$psObj.Nuspecs|Invoke-XParallel -VariablesToImport psObj -ActivityName Packing -script{
     Nuget Pack $_ -version ($psObj.Version) -OutputDirectory ($psObj.OutputDirectory)
 }
 
