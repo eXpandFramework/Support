@@ -15,12 +15,14 @@ $(@{
     Version ="4.7.4"
 }),$(@{
     Name = "XpandPosh"
-    Version ="1.1.1"
+    Version ="1.1.9"
 })|ForEach-Object{
     & "$PSScriptRoot\Install-Module.ps1" $_
 } 
 if (!$version){
-    return Get-XXpandVersion -Next
+    $nextVersion=Get-XXpandVersion -Next
+    Write-host "NextVersion=$nextVersion"
+    return $nextVersion
 }
 
 if (!$msbuild){

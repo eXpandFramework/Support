@@ -8,7 +8,7 @@ Param (
 
 & "$PSScriptRoot\ImportXpandPosh.ps1" 
 set-location $root
-Get-ChildItem *.csproj -recurse|Where{
+Get-ChildItem *.csproj -recurse|Where-Object{
     $directoryName=(Get-Item $_).DirectoryName
     Write-Host $directoryName -f Green
     set-location $directoryName
@@ -19,7 +19,7 @@ Get-ChildItem *.csproj -recurse|Where{
             $id=$_.Id
             Write-Host $_.id -f Blue
             if (!($id -like "*.XAF.*")){
-                $_.version=Get-DXVersion $version $true
+                $_.version=Get-DevExpressVersion $version $true
                 $newVersion=$_.version
             }
             else{
