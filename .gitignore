@@ -52,3 +52,4 @@ _third_party_assemblies/Packages/*
 *.sln.metaproj*
 
 */.vs
+/Build/setup.exe

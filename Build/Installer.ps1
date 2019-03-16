@@ -5,10 +5,8 @@ Param (
 . "$PSScriptRoot\Utils.ps1"
 Push-Location "$XpandFolder"
 if ($DXVersion -eq "0.0.0.0"){
-    $DXVersion=Get-XpandVersion "$XpandFolder"
+    $DXVersion=Get-XXpandVersion "$XpandFolder"
 }
-
-
 $installerFolder="$XpandFolder\Build\Installer"
 if (test-path $installerFolder){
     Remove-Item $installerFolder -Force -Recurse
@@ -42,12 +40,8 @@ Remove-Item "$sourceFolder\build" -Recurse -Force
 Compress-XFiles -DestinationPath "$installerFolder\Source.zip" -path $sourceFolder 
 Remove-Item $sourceFolder -Force -Recurse
 
-
 Copy-Item "$installerFolder\Source.zip" -Destination "$packageFolder\Xpand-Source-$DXVersion.zip"
 
-
-& "$XpandFolder\Support\Tool\NSIS\makensis.exe" /DXVERSION=$Version $XpandFolder\Support\Build\Xpand.nsi
-Move-Item "$XpandFolder\Support\Build\Setup.exe" -Destination "$installerFolder\eXpandFramework-$DXVersion.exe" -Force
 Pop-Location
 
 

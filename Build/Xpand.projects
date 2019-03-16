@@ -14,7 +14,6 @@
 					Xpand.EasyTest\Xpand.ExpressApp.EasyTest.WinAdapter\Xpand.ExpressApp.EasyTest.WinAdapter.csproj;"  />
     <HelperProjects Include="
 					Support\DistribNugetAssemblies\DistribNugetAssemblies.csproj;
-					Support\ToolboxCreator\Xpand.ToolboxCreator.csproj;
 					Support\GacInstaller\GacInstaller.csproj"/>
     <VSAddons Include="
                     Xpand.Plugins\Xpand.ExpressApp.ModelEditor\Xpand.ExpressApp.ModelEditor.csproj;"/>
