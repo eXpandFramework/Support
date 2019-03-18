@@ -14,7 +14,7 @@
     <copyright>eXpandFramework.com</copyright>
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <dependencies>
-      <dependency id="eXpandLib" version="18.2.700.0" />
+      <dependency id="eXpandLib" version="18.2.701.0" />
     </dependencies>
   </metadata>
   <files>
