@@ -15,7 +15,7 @@ $(@{
     Version ="4.7.4"
 }),$(@{
     Name = "XpandPosh"
-    Version ="1.1.9"
+    Version ="1.3.6"
 })|ForEach-Object{
     & "$PSScriptRoot\Install-Module.ps1" $_
 } 
