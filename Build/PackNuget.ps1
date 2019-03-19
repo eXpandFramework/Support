@@ -34,8 +34,9 @@ $psObj = [PSCustomObject]@{
     Nuspecs          = $nuspecFiles|Select-Object -ExpandProperty FullName 
     version=$XpandVersion
 }
-$psObj.Nuspecs|Invoke-XParallel -VariablesToImport psObj -ActivityName Packing -script{
-    Nuget Pack $_ -version ($psObj.Version) -OutputDirectory ($psObj.OutputDirectory)
+$nuget="$(Get-XNugetPath)"
+$psObj.Nuspecs|Invoke-XParallel -VariablesToImport @("psObj","nuget") -ActivityName Packing -script{
+    & $Nuget Pack $_ -version ($psObj.Version) -OutputDirectory ($psObj.OutputDirectory)
 }
 
 Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | ForEach-Object{
@@ -45,7 +46,7 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | ForEach-Object{
 
 $packageDir="$basepath\Build\_package\$XpandVersion"
 New-Item $packageDir -ItemType Directory -Force|Out-Null
-Compress-XFiles -DestinationPath "$packageDir\Nupkg-$XpandVersion.zip" -path $nupkgPath
+Compress-7Zip -ArchiveFileName "$packageDir\Nupkg-$XpandVersion.zip" -path $nupkgPath
 
 
 

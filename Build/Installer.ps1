@@ -23,7 +23,7 @@ Get-ChildItem -Path ".\Xpand.DLL" -Include "*.*" | Where-Object{
     (("*.dll","*.exe","*.config","*.pdb"|Where-Object{$fullName -like $_}).Length -gt 0) -and ($fullName -notlike "*\Plugins\*")
 } | 
 Copy-Item -Destination "$installerFolder\Xpand.DLL\" -Force
-Compress-XFiles -DestinationPath $packageFolder\Xpand-lib-$DXVersion.zip -Path $installerFolder\Xpand.DLL
+Compress-7Zip -ArchiveFileName $packageFolder\Xpand-lib-$DXVersion.zip -path $installerFolder\Xpand.DLL
 
 Copy-Item "$XpandFolder\Xpand.DLL\Plugins\Xpand.VSIX.vsix" "$packageFolder\Xpand.VSIX-$DXVersion.vsix"
 Copy-Item "$XpandFolder\Xpand.DLL\Plugins\Xpand.VSIX.vsix" "$installerfolder\Xpand.VSIX-$DXVersion.vsix"
@@ -37,7 +37,7 @@ Get-ChildItem $XpandFolder -recurse -Include "*.*" |Where-Object{
     Where-Object{$fullName -like $_}).Length -eq 0)
 } | ForEach-Object {CloneItem $_ -TargetDir $sourceFolder -SourceDir $XpandFolder  }
 Remove-Item "$sourceFolder\build" -Recurse -Force 
-Compress-XFiles -DestinationPath "$installerFolder\Source.zip" -path $sourceFolder 
+Compress-7Zip -ArchiveFileName "$installerFolder\Source.zip" -path $sourceFolder 
 Remove-Item $sourceFolder -Force -Recurse
 
 Copy-Item "$installerFolder\Source.zip" -Destination "$packageFolder\Xpand-Source-$DXVersion.zip"

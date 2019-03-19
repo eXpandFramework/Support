@@ -15,7 +15,7 @@ $(@{
     Version ="4.7.4"
 }),$(@{
     Name = "XpandPosh"
-    Version ="1.3.6"
+    Version ="1.3.7"
 })|ForEach-Object{
     & "$PSScriptRoot\Install-Module.ps1" $_
 } 
@@ -26,7 +26,9 @@ if (!$version){
 }
 
 if (!$msbuild){
-    $msbuild=Get-XMsBuildLocation
+    push-location "${env:ProgramFiles(x86)}\microsoft visual studio\installer"
+    $msbuild= .\vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | select-object -first 1
+    Pop-Location
 }
 
 $clean=$($taskList -in "Release")

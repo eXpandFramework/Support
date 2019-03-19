@@ -32,7 +32,7 @@ Task Init  {
             Copy-Item $_.FullName "$root\Xpand.dll\$($_.FileName)" -Force
         }
         
-        $r=New-XCommand "Nuget" nuget "restore $root\Support\BuildHelper\BuildHelper.sln -PackagesDirectory $root\Support\_third_party_assemblies\Packages"
+        $r=New-XCommand "Nuget" "$(Get-XNugetPath)" "restore $root\Support\BuildHelper\BuildHelper.sln -PackagesDirectory $root\Support\_third_party_assemblies\Packages"
         if ($r.ExitCode){
             throw $r.stderr
         }
