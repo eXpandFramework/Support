@@ -46,7 +46,7 @@ Get-ChildItem $nuspecFolder  -Filter "*.nuspec" | ForEach-Object{
 
 $packageDir="$basepath\Build\_package\$XpandVersion"
 New-Item $packageDir -ItemType Directory -Force|Out-Null
-Compress-7Zip -ArchiveFileName "$packageDir\Nupkg-$XpandVersion.zip" -path $nupkgPath
+Compress-Archive -DestinationPath "$packageDir\Nupkg-$XpandVersion.zip" -path "$nupkgPath\*"
 
 
 
