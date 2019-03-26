@@ -192,7 +192,10 @@ Task CompileModules{
         $projects|ForEach-Object{
             $fileName=(Get-Item $_).Name
             write-host "Building $fileName..." -f "Blue"
-            & $msbuild (GetBuildArgs "$_") 
+            & $msbuild (GetBuildArgs "$_")
+            if ($LASTEXITCODE) {
+                throw
+            }
         }
 
         $helpers=($group.HelperProjects|GetProjects)+ ($group.VSAddons|GetProjects)
