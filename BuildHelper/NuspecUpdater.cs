@@ -131,7 +131,7 @@ namespace BuildHelper {
         }
         
         private string GetPackageId(string assemblyName, string id){
-            if (assemblyName.StartsWith("Xpand")){
+            if (assemblyName.StartsWith("Xpand")&&!assemblyName.StartsWith("Xpand.XAF.Modules")){
                 var adjustName = AdjustName(assemblyName).ToLowerInvariant();
                 var nuspec = FindNuspec(adjustName);
                 if (nuspec == null){
@@ -162,7 +162,7 @@ namespace BuildHelper {
                     var assemblyName = GetAssemblyName(element).ToLowerInvariant();
                     var version = _version;
                     string packageId = null;
-                    if(!assemblyName.StartsWith("xpand")) {
+                    if(!assemblyName.StartsWith("xpand")||assemblyName.StartsWith("xpand.xaf.modules")) {
                         packageId = GetPackageId(element)??assemblyName;
                         var packagesConfig = (File.Exists(path) ? File.ReadAllText(path) : "").ToLowerInvariant();
                         var regex = new Regex("<package id=\"" + packageId + "\" .*version=\"([^\"]*).*/>",RegexOptions.IgnoreCase);
