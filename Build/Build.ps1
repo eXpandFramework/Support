@@ -16,6 +16,7 @@ properties {
 }
 
 Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
+Task Lab -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules
 
 Task InstallDX{
     InvokeScript{
@@ -28,7 +29,7 @@ Task Init  {
         "$root\Xpand.dll","$root\Build","$root\Build\Temp","$root\Support\_third_party_assemblies\Packages\" | ForEach-Object{
             New-Item $_ -ItemType Directory -Force |Out-Null
         }
-        Get-ChildItem "$root\support\_third_party_assemblies\" -Recurse  | ForEach-Object{
+        Get-ChildItem "$root\support\_third_party_assemblies\" *.dll  | ForEach-Object{
             Copy-Item $_.FullName "$root\Xpand.dll\$($_.FileName)" -Force
         }
         
@@ -61,11 +62,11 @@ Task Init  {
 
 Task Finalize {
     InvokeScript{
-        Get-ChildItem "$root\Xpand.dll\" -Include "DevExpress.*" -Recurse | ForEach-Object{
-            if (![system.io.path]::GetFileName($_).StartsWith("Xpand.XAF") ){
-                remove-item $_ -Force -Recurse
-            }
-        }
+        # Get-ChildItem "$root\Xpand.dll\" -Include "DevExpress.*" -Recurse | ForEach-Object{
+        #     if (![system.io.path]::GetFileName($_).StartsWith("Xpand.XAF") ){
+        #         remove-item $_ -Force -Recurse
+        #     }
+        # }
         Get-ChildItem "$root\Xpand.dll\" -Exclude "*.locked" | ForEach-Object{
             Copy-item $_ "$root\Build\Temp\$($_.FileName)" -Force
         }
@@ -75,9 +76,9 @@ Task Finalize {
 
 Task BuildExtras{
     InvokeScript{
-        "$root\Support\XpandTestExecutor\XpandTestExecutor.sln","$root\Support\XpandTestExecutor\RDClient\RDClient.csproj" |ForEach-Object{
-            & $msbuild (GetBuildArgs $_)
-        }
+        # "$root\Support\XpandTestExecutor\XpandTestExecutor.sln","$root\Support\XpandTestExecutor\RDClient\RDClient.csproj" |ForEach-Object{
+        #     & $msbuild (GetBuildArgs $_)
+        # }
     }
 }
 Task PackNuget{
