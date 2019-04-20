@@ -14,11 +14,11 @@
     <tags>DevExpress, eXpand, XAF, eXpressApp</tags>
     <projectUrl>http://www.expandframework.com/#ExcelImporter</projectUrl>
     <dependencies>
-      <dependency id="ExcelDataReader" version="3.4.0" />
-      <dependency id="eXpandExcelImporter" version="18.2.703.0" />
-      <dependency id="eXpandLib" version="18.2.703.0" />
-      <dependency id="eXpandSystemWeb" version="18.2.703.0" />
-      <dependency id="eXpandValidationWeb" version="18.2.703.0" />
+      <dependency id="ExcelDataReader" version="3.5.0" />
+      <dependency id="eXpandExcelImporter" version="18.2.704.0" />
+      <dependency id="eXpandLib" version="18.2.704.0" />
+      <dependency id="eXpandSystemWeb" version="18.2.704.0" />
+      <dependency id="eXpandValidationWeb" version="18.2.704.0" />
     </dependencies>
   </metadata>
   <files>
