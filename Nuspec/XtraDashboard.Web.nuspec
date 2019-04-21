@@ -19,7 +19,7 @@
       <dependency id="eXpandSecurity" version="18.2.704.0" />
       <dependency id="eXpandSecurityWeb" version="18.2.704.0" />
       <dependency id="eXpandSystemWeb" version="18.2.704.0" />
-      <dependency id="Xpand.XAF.Modules.SupressConfirmation" version="0.0.6.1" />
+      <dependency id="Xpand.XAF.Modules.SuppressConfirmation" version="0.0.10" />
     </dependencies>
   </metadata>
   <files>
