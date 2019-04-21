@@ -15,13 +15,14 @@ properties {
     $Repository=$null
 }
 
-Task Release  -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
+Task Release -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
 Task Lab -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules
 
 Task InstallDX{
     InvokeScript{
         $version
-        Install-XDevExpress -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $(Get-XDevExpressVersion -Version $version -build)
+        $dxversion=$(Get-XDevExpressVersion -Version $version -build)
+        Install-XDevExpress -binPath "$PSScriptRoot\..\..\Xpand.dll" -dxSources $packageSources -sourcePath $root -dxVersion $dxversion
     }
 }
 Task Init  {

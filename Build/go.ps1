@@ -2,7 +2,7 @@ param(
     [string]$configuration="Release",
     [string]$version=$null,
     [string]$msbuild=$null,
-    [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 18.2\Components\System\Components\packages")  ,
+    [string[]]$packageSources=@("https://api.nuget.org/v3/index.json","https://xpandnugetserver.azurewebsites.net/nuget","C:\Program Files (x86)\DevExpress 19.1\Components\System\Components\packages")  ,
     [string[]]$msbuildArgs=@("/p:Configuration=$configuration","/WarnAsError","/v:m"),
     [string[]]$taskList=@("Release"),
     [string]$nugetApiKey=$null,
@@ -11,7 +11,7 @@ param(
 )
 $xpandPosh=[PSCustomObject]@{
     Name = "XpandPosh"
-    Version = "1.9.0"
+    Version = "1.9.2"
 }
 & "$PSScriptRoot\Install-Module.ps1" -psObj $xpandPosh
 $psake=[PSCustomObject]@{
@@ -29,7 +29,7 @@ if (!$msbuild){
     $msbuild=Get-XMsBuildPath
 }
 
-$clean=$($taskList -in "Release")
+$clean=$($taskList -in "Release","lab")
 Invoke-Xpsake  "$PSScriptRoot\Build.ps1" -properties @{
     "version"=$version;
     "msbuild"=$msbuild;
