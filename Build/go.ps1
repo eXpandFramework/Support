@@ -7,7 +7,8 @@ param(
     [string[]]$taskList=@("Release"),
     [string]$nugetApiKey=$null,
     [switch]$UseAllPackageSources,
-    [string]$Repository="eXpand"
+    [string]$Repository="eXpand",
+    [string]$branch="master"
 )
 $xpandPosh=[PSCustomObject]@{
     Name = "XpandPosh"
@@ -40,4 +41,5 @@ Invoke-Xpsake  "$PSScriptRoot\Build.ps1" -properties @{
     "nugetApiKey"=$nugetApiKey;
     "Repository"=$Repository;
     "UseAllPackageSources"=$UseAllPackageSources
+    "branch"=$branch
 } -taskList $taskList

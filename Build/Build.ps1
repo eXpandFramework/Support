@@ -13,6 +13,7 @@ properties {
     $nugetApiKey=$null
     $UseAllPackageSources=$true
     $Repository=$null
+    $Brannch=$null
 }
 
 Task Release -depends Clean,InstallDX, Init,Version,RestoreNuget, CompileModules,CompileDemos,VSIX ,BuildExtras,IndexSources, Finalize,PackNuget,Installer
@@ -111,7 +112,6 @@ Task RestoreNuget{
 }
 
 Task IndexSources -precondition {$repository}{
-    $branch=Get-XDevExpressVersion $version
     Get-ChildItem $root\Xpand.dll Xpand*.pdb|
     Update-XSymbols -TargetRoot "https://raw.githubusercontent.com/eXpandFramework/$repository/$branch" -sourcesRoot $root
 }
